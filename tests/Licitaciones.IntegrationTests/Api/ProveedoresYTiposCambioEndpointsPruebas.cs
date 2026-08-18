@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using FluentAssertions;
 using Licitaciones.Application.Dtos;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.IntegrationTests.Infraestructura;
@@ -9,6 +8,7 @@ using Licitaciones.IntegrationTests.Infraestructura;
 namespace Licitaciones.IntegrationTests.Api;
 
 /// <summary>Endpoints de proveedores y de tipos de cambio contra infraestructura real.</summary>
+[Collection(ColeccionPostgres.Nombre)]
 public sealed class ProveedoresYTiposCambioEndpointsPruebas : PruebaApiBase
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Application.Abstracciones;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.IntegrationTests.Infraestructura;

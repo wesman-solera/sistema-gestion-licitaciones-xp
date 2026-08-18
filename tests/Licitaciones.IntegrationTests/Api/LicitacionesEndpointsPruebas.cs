@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using FluentAssertions;
 using Licitaciones.Application.Dtos;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.IntegrationTests.Infraestructura;
@@ -16,6 +15,7 @@ namespace Licitaciones.IntegrationTests.Api;
 /// del ProblemDetails. Es lo que exige la seccion 12.2 al pedir pruebas de endpoints con
 /// infraestructura real.
 /// </remarks>
+[Collection(ColeccionPostgres.Nombre)]
 public sealed class LicitacionesEndpointsPruebas : PruebaApiBase
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);

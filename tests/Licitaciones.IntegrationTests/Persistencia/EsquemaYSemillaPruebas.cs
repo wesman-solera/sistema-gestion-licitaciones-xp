@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.IntegrationTests.Infraestructura;
 using Licitaciones.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;

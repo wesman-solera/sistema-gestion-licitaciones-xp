@@ -45,7 +45,10 @@ public sealed class FabricaAplicacion : WebApplicationFactory<Licitaciones.Web.P
 }
 
 /// <summary>Base de las pruebas de API que necesitan la aplicacion levantada.</summary>
-[Collection(ColeccionPostgres.Nombre)]
+/// <remarks>
+/// El atributo de coleccion se declara en cada clase concreta y no aqui: xUnit lo descubre por
+/// reflexion y depender de la herencia del atributo haria el arranque de las pruebas fragil.
+/// </remarks>
 public abstract class PruebaApiBase : IAsyncLifetime
 {
     /// <summary>Contenedor de PostgreSQL compartido.</summary>

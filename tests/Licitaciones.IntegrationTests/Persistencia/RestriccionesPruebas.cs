@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.IntegrationTests.Infraestructura;
 using Licitaciones.Infrastructure.Persistencia;
@@ -49,7 +48,8 @@ public sealed class RestriccionesPruebas : IAsyncLifetime
         Func<Task> accion = () => contexto.SaveChangesAsync();
 
         var excepcion = await accion.Should().ThrowAsync<DbUpdateException>();
-        excepcion.WithInnerException<DbUpdateException, PostgresException>()
+
+        excepcion.Which.InnerException.Should().BeOfType<PostgresException>()
             .Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
     }
 
@@ -68,7 +68,8 @@ public sealed class RestriccionesPruebas : IAsyncLifetime
         Func<Task> accion = () => contexto.SaveChangesAsync();
 
         var excepcion = await accion.Should().ThrowAsync<DbUpdateException>();
-        excepcion.WithInnerException<DbUpdateException, PostgresException>()
+
+        excepcion.Which.InnerException.Should().BeOfType<PostgresException>()
             .Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
     }
 
@@ -99,7 +100,8 @@ public sealed class RestriccionesPruebas : IAsyncLifetime
         Func<Task> accion = () => contexto.SaveChangesAsync();
 
         var excepcion = await accion.Should().ThrowAsync<DbUpdateException>();
-        excepcion.WithInnerException<DbUpdateException, PostgresException>()
+
+        excepcion.Which.InnerException.Should().BeOfType<PostgresException>()
             .Which.ConstraintName.Should().Be("ux_ofertas_licitacion_proveedor");
     }
 
@@ -118,7 +120,8 @@ public sealed class RestriccionesPruebas : IAsyncLifetime
 
         // La semilla ya dejo uno activo, asi que este segundo debe ser rechazado.
         var excepcion = await accion.Should().ThrowAsync<DbUpdateException>();
-        excepcion.WithInnerException<DbUpdateException, PostgresException>()
+
+        excepcion.Which.InnerException.Should().BeOfType<PostgresException>()
             .Which.ConstraintName.Should().Be("ux_tipos_cambio_unico_activo");
     }
 
@@ -162,7 +165,8 @@ public sealed class RestriccionesPruebas : IAsyncLifetime
         Func<Task> accion = () => contexto.SaveChangesAsync();
 
         var excepcion = await accion.Should().ThrowAsync<DbUpdateException>();
-        excepcion.WithInnerException<DbUpdateException, PostgresException>()
+
+        excepcion.Which.InnerException.Should().BeOfType<PostgresException>()
             .Which.SqlState.Should().Be(PostgresErrorCodes.ForeignKeyViolation);
     }
 
