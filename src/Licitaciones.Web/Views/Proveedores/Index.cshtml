@@ -1,0 +1,86 @@
+@model ListadoViewModel<ProveedorDto>
+@{
+    ViewData["Title"] = "Proveedores";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Proveedores</h1>
+        <p>Empresas y personas habilitadas para presentar ofertas.</p>
+    </div>
+    <a class="boton boton--primario" asp-action="Crear">Nuevo proveedor</a>
+</div>
+
+<div class="tarjeta">
+    <form method="get" class="filtros">
+        <div class="campo">
+            <label for="buscar">Buscar por nombre</label>
+            <input type="search" id="buscar" name="buscar" value="@Model.Parametros.Buscar" />
+        </div>
+        <div class="campo">
+            <label for="incluirEliminados">Incluir eliminados</label>
+            <select id="incluirEliminados" name="incluirEliminados">
+                <option value="false" selected="@(!Model.Parametros.IncluirEliminados)">No</option>
+                <option value="true" selected="@Model.Parametros.IncluirEliminados">Si</option>
+            </select>
+        </div>
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--secundario">Filtrar</button>
+            <a class="boton boton--secundario" asp-action="Index">Limpiar</a>
+        </div>
+    </form>
+
+    @if (Model.Pagina.Elementos.Count == 0)
+    {
+        <p class="sin-datos">No hay proveedores que coincidan con el filtro aplicado.</p>
+    }
+    else
+    {
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <caption class="solo-lectores">Listado de proveedores registrados</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <a asp-all-route-data="@Model.ValoresRuta(pagina: 1, ordenarPor: "nombre", descendente: Model.ProximaDireccion("nombre"))">Nombre</a>
+                        </th>
+                        <th scope="col">Forma normalizada</th>
+                        <th scope="col" class="numerico">Ofertas</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col"><span class="solo-lectores">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ProveedorDto proveedor in Model.Pagina.Elementos)
+                    {
+                        <tr data-proveedor="@proveedor.Nombre">
+                            <td>@proveedor.Nombre</td>
+                            <td><code>@proveedor.NombreNormalizado</code></td>
+                            <td class="numerico">@proveedor.CantidadOfertas</td>
+                            <td>
+                                @if (proveedor.Eliminado)
+                                {
+                                    <span class="etiqueta etiqueta--cerrada">Eliminado</span>
+                                }
+                                else
+                                {
+                                    <span class="etiqueta etiqueta--publicada">Activo</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="grupo-botones">
+                                    <a class="boton boton--secundario boton--pequeno"
+                                       asp-controller="Ofertas" asp-action="Index" asp-route-proveedorId="@proveedor.Id">Ofertas</a>
+                                    <a class="boton boton--secundario boton--pequeno" asp-action="Editar" asp-route-id="@proveedor.Id">Editar</a>
+                                    <a class="boton boton--secundario boton--pequeno" asp-action="Eliminar" asp-route-id="@proveedor.Id">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Paginacion" model="PaginacionViewModel.Desde(Model)" />
+    }
+</div>

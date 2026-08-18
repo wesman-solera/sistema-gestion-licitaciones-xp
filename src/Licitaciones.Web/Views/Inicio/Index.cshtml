@@ -1,0 +1,143 @@
+@model InicioViewModel
+@{
+    ViewData["Title"] = "Sistema de Gestion de Licitaciones";
+}
+
+<section class="portada">
+    <h1>Sistema de Gestion de Licitaciones</h1>
+    <p>
+        Plataforma para publicar procesos de compra, recibir ofertas economicas de los proveedores
+        registrados, identificar la oferta mas conveniente y determinar quien debe aprobarla. Todos
+        los montos oficiales se registran en <strong>colones costarricenses (CRC)</strong>; el
+        equivalente en dolares es una representacion calculada que nunca sustituye al valor original.
+    </p>
+    <div class="grupo-botones">
+        <a class="boton boton--primario" asp-controller="Licitaciones" asp-action="Index">Ver licitaciones</a>
+        <a class="boton boton--secundario" asp-controller="Licitaciones" asp-action="Crear">Crear una licitacion</a>
+        <a class="boton boton--secundario" href="/swagger" rel="noopener">Documentacion de la API</a>
+    </div>
+</section>
+
+<div class="rejilla rejilla--2">
+    <section class="tarjeta">
+        <h2 class="tarjeta__titulo">Como funciona el flujo de licitacion</h2>
+        <ol class="pasos">
+            <li>
+                <div>
+                    <strong>Registrar proveedores.</strong>
+                    Cada proveedor tiene un nombre unico. El sistema considera equivalentes
+                    &laquo;Empresa Central&raquo;, &laquo; empresa central&raquo; y
+                    &laquo;EMPRESA&nbsp;&nbsp;CENTRAL&raquo;, de modo que no puede duplicarse.
+                </div>
+            </li>
+            <li>
+                <div>
+                    <strong>Crear la licitacion.</strong>
+                    Nace en estado <em>Borrador</em> con un codigo unico, un presupuesto estimado
+                    y una fecha y hora de cierre seleccionada en el calendario.
+                </div>
+            </li>
+            <li>
+                <div>
+                    <strong>Publicarla.</strong>
+                    Solo pasa a <em>Publicada</em> si sus datos estan completos, el presupuesto es
+                    valido y la fecha de cierre todavia es futura. Una vez publicada no puede
+                    regresar a Borrador.
+                </div>
+            </li>
+            <li>
+                <div>
+                    <strong>Recibir ofertas.</strong>
+                    Cada proveedor puede presentar una unica oferta por licitacion. Se rechaza la
+                    que supere el presupuesto y la que llegue en la fecha de cierre o despues.
+                </div>
+            </li>
+            <li>
+                <div>
+                    <strong>Evaluar y aprobar.</strong>
+                    El sistema identifica la mejor oferta, calcula el ahorro y determina el
+                    aprobador segun el monto.
+                </div>
+            </li>
+        </ol>
+    </section>
+
+    <div>
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo">Como se elige la mejor oferta</h2>
+            <p>
+                La mejor oferta es la de <strong>menor monto en colones</strong>. Si dos ofertas
+                empatan, gana la que se registro primero.
+            </p>
+            <p>El ahorro respecto del presupuesto determina la clasificacion:</p>
+            <div class="tabla-contenedor">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th scope="col">Ahorro</th>
+                            <th scope="col">Clasificacion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10&nbsp;% o mas</td>
+                            <td><span class="etiqueta etiqueta--conveniente">Oferta conveniente</span></td>
+                        </tr>
+                        <tr>
+                            <td>Mayor que 0&nbsp;% y menor que 10&nbsp;%</td>
+                            <td><span class="etiqueta etiqueta--aceptable">Oferta aceptable</span></td>
+                        </tr>
+                        <tr>
+                            <td>Igual al presupuesto (0&nbsp;%)</td>
+                            <td><span class="etiqueta etiqueta--sin-ahorro">Oferta valida sin ahorro</span></td>
+                        </tr>
+                        <tr>
+                            <td>Sin ofertas registradas</td>
+                            <td><span class="etiqueta etiqueta--sin-ahorro">Sin ofertas validas</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo">Niveles de aprobacion</h2>
+            <p>
+                Quien aprueba una adjudicacion depende del monto de la mejor oferta y se obtiene de
+                una <a asp-controller="NivelesAprobacion" asp-action="Index">tabla parametrizable</a>:
+                cambiar un rango o un responsable es editar un registro, no modificar el sistema.
+            </p>
+        </section>
+
+        <section class="tarjeta">
+            <h2 class="tarjeta__titulo">Conversion de moneda</h2>
+            @if (Model.TipoCambioActivo is TipoCambioDto tipoCambio)
+            {
+                <p>
+                    El tipo de cambio activo es
+                    <strong>@FormateadorMonto.FormatearColones(tipoCambio.CrcPorUsd) por US$1,00</strong>,
+                    vigente desde el @FormateadorFecha.Fecha(tipoCambio.FechaVigencia).
+                </p>
+                <p>
+                    Use el boton <strong>@Preferencias.Moneda</strong> de la barra superior para
+                    alternar la visualizacion entre colones y dolares. La conversion se calcula al
+                    momento de mostrarla y no modifica ningun valor almacenado.
+                </p>
+            }
+            else
+            {
+                <div class="mensaje mensaje--advertencia" role="status">
+                    <span aria-hidden="true">&#9888;</span>
+                    <span>
+                        Todavia no hay un tipo de cambio activo. Registre uno en
+                        <a asp-controller="TiposCambio" asp-action="Crear">Tipo de cambio</a>
+                        para habilitar la visualizacion en dolares.
+                    </span>
+                </div>
+            }
+            <p class="campo__ayuda">
+                El sistema administra el tipo de cambio localmente y funciona sin conexion a Internet.
+            </p>
+        </section>
+    </div>
+</div>

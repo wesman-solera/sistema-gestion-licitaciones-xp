@@ -1,0 +1,22 @@
+@model NivelAprobacionFormulario
+@{
+    ViewData["Title"] = "Nuevo nivel de aprobacion";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Nuevo nivel de aprobacion</h1>
+        <p>Defina el rango de montos y quien lo aprueba.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Crear" data-una-vez>
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Crear rango</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>

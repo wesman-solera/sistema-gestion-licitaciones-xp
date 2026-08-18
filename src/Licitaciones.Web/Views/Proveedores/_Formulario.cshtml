@@ -1,0 +1,14 @@
+@model ProveedorFormulario
+
+<partial name="_ResumenValidacion" />
+
+<div class="campo">
+    <label asp-for="Nombre">Nombre</label>
+    <input asp-for="Nombre" maxlength="200" autocomplete="organization" />
+    <span asp-validation-for="Nombre" class="campo__error"></span>
+    <span class="campo__ayuda">
+        Admite letras, numeros, espacios, punto, coma y parentesis. El sistema considera
+        equivalentes &laquo;Empresa Central&raquo;, &laquo; empresa central&raquo; y
+        &laquo;EMPRESA&nbsp;&nbsp;CENTRAL&raquo;, de modo que no puede repetirse.
+    </span>
+</div>

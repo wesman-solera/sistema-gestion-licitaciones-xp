@@ -1,0 +1,30 @@
+@model TipoCambioFormulario
+
+<partial name="_ResumenValidacion" />
+
+<div class="campo">
+    <label asp-for="CrcPorUsd">Colones por dolar</label>
+    <input asp-for="CrcPorUsd" type="number" step="0.01" min="0.01" data-minimo="0.01" />
+    <span asp-validation-for="CrcPorUsd" class="campo__error"></span>
+    <span class="campo__ayuda">
+        Cantidad de colones que equivalen a US$1,00. Debe ser mayor que cero.
+    </span>
+</div>
+
+<div class="campo">
+    <label asp-for="FechaVigencia">Fecha de vigencia</label>
+    <input asp-for="FechaVigencia" type="date" />
+    <span asp-validation-for="FechaVigencia" class="campo__error"></span>
+    <span class="campo__ayuda">Se muestra junto a los montos convertidos.</span>
+</div>
+
+@if (!Model.EsEdicion)
+{
+    <div class="campo">
+        <label>
+            <input asp-for="Activo" type="checkbox" style="width:auto;margin-right:8px" />
+            Marcar como activo al crearlo
+        </label>
+        <span class="campo__ayuda">Si lo activa, el tipo de cambio vigente hasta ahora se desactivara.</span>
+    </div>
+}

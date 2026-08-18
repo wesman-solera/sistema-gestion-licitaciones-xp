@@ -1,0 +1,207 @@
+@model LicitacionDetalleDto
+@{
+    ViewData["Title"] = $"Licitacion {Model.Codigo}";
+    bool cerrada = Model.EstadoEfectivo == EstadoLicitacion.Cerrada;
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>@Model.Codigo</h1>
+        <p>@Model.Titulo</p>
+    </div>
+    <div class="grupo-botones">
+        @if (Model.Estado != EstadoLicitacion.Cerrada)
+        {
+            <a class="boton boton--secundario" asp-action="Editar" asp-route-id="@Model.Id">Editar</a>
+        }
+        @if (!cerrada && Model.Estado == EstadoLicitacion.Publicada)
+        {
+            <a class="boton boton--primario" asp-controller="Ofertas" asp-action="Crear" asp-route-licitacionId="@Model.Id">Registrar oferta</a>
+        }
+        <a class="boton boton--secundario" asp-action="Index">Volver</a>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <h2 class="tarjeta__titulo">Datos generales</h2>
+    <dl class="definiciones">
+        <div>
+            <dt>Estado</dt>
+            <dd>
+                <span class="etiqueta etiqueta--@Model.EstadoEfectivo.ToString().ToLowerInvariant()" data-estado>
+                    @Model.EstadoEfectivo
+                </span>
+            </dd>
+        </div>
+        <div>
+            <dt>Presupuesto estimado</dt>
+            <dd data-presupuesto>@Montos.Formatear(Model.PresupuestoEstimado)</dd>
+        </div>
+        <div>
+            <dt>Fecha y hora de cierre</dt>
+            <dd>@FormateadorFecha.FechaHora(Model.FechaCierre)</dd>
+        </div>
+        <div>
+            <dt>Creada</dt>
+            <dd>@FormateadorFecha.FechaHora(Model.CreatedAt)</dd>
+        </div>
+        <div>
+            <dt>Ultima modificacion</dt>
+            <dd>@FormateadorFecha.FechaHora(Model.UpdatedAt)</dd>
+        </div>
+    </dl>
+
+    @if (Model.TipoCambioAplicado is TipoCambioAplicadoDto cambio)
+    {
+        <p class="campo__ayuda">
+            Conversion calculada con @FormateadorMonto.FormatearColones(cambio.CrcPorUsd) por US$1,00,
+            vigente desde el @FormateadorFecha.Fecha(cambio.FechaVigencia).
+        </p>
+    }
+
+    @if (Model.TransicionesDisponibles.Count > 0)
+    {
+        <h3 class="tarjeta__titulo" style="margin-top:18px">Cambiar estado</h3>
+        <div class="grupo-botones">
+            @foreach (EstadoLicitacion destino in Model.TransicionesDisponibles)
+            {
+                <form method="post" asp-action="CambiarEstado" asp-route-id="@Model.Id"
+                      data-una-vez
+                      data-confirmar="Confirma cambiar la licitacion a estado @destino?">
+                    <input type="hidden" name="estado" value="@destino" />
+                    <button type="submit" class="boton boton--primario" data-transicion="@destino">
+                        Pasar a @destino
+                    </button>
+                </form>
+            }
+        </div>
+        @if (Model.Estado == EstadoLicitacion.Borrador)
+        {
+            <p class="campo__ayuda">
+                Publicar exige datos completos, presupuesto valido y fecha de cierre futura.
+                Cerrar desde Borrador equivale a cancelar el proceso.
+            </p>
+        }
+    }
+    else
+    {
+        <p class="campo__ayuda">
+            Una licitacion cerrada no admite transiciones. La reapertura requiere autorizacion
+            expresa de la persona docente.
+        </p>
+    }
+</div>
+
+<div class="tarjeta">
+    <h2 class="tarjeta__titulo">Evaluacion de ofertas</h2>
+    <dl class="definiciones">
+        <div>
+            <dt>Clasificacion</dt>
+            <dd>
+                @{
+                    string claseEtiqueta = Model.Evaluacion.Clasificacion switch
+                    {
+                        ClasificacionAhorro.OfertaConveniente => "conveniente",
+                        ClasificacionAhorro.OfertaAceptable => "aceptable",
+                        _ => "sin-ahorro"
+                    };
+                }
+                <span class="etiqueta etiqueta--@claseEtiqueta" data-clasificacion>
+                    @Model.Evaluacion.EtiquetaClasificacion
+                </span>
+            </dd>
+        </div>
+        <div>
+            <dt>Mejor oferta</dt>
+            <dd data-mejor-oferta>
+                @(Model.Evaluacion.MejorOferta is null ? "-" : Montos.Formatear(Model.Evaluacion.MejorOferta.Monto))
+            </dd>
+        </div>
+        <div>
+            <dt>Proveedor de la mejor oferta</dt>
+            <dd>@(Model.Evaluacion.MejorOferta?.NombreProveedor ?? "-")</dd>
+        </div>
+        <div>
+            <dt>Porcentaje de ahorro</dt>
+            <dd data-ahorro>
+                @(Model.Evaluacion.PorcentajeAhorro is decimal ahorro ? $"{ahorro:0.00} %" : "-")
+            </dd>
+        </div>
+        <div>
+            <dt>Nivel de aprobacion</dt>
+            <dd data-aprobador>@(Model.Evaluacion.Aprobador ?? "-")</dd>
+        </div>
+        <div>
+            <dt>Cantidad de ofertas</dt>
+            <dd>@Model.Evaluacion.CantidadOfertas</dd>
+        </div>
+    </dl>
+
+    @if (Model.Evaluacion.MejorOferta is not null && Model.Evaluacion.Aprobador is null)
+    {
+        <div class="mensaje mensaje--advertencia" role="status">
+            <span aria-hidden="true">&#9888;</span>
+            <span>
+                Ningun rango parametrizado cubre el monto de la mejor oferta. Revise la tabla de
+                <a asp-controller="NivelesAprobacion" asp-action="Index">niveles de aprobacion</a>.
+            </span>
+        </div>
+    }
+</div>
+
+<div class="tarjeta">
+    <h2 class="tarjeta__titulo">Ofertas registradas</h2>
+
+    @if (Model.Ofertas.Count == 0)
+    {
+        <p class="sin-datos">Esta licitacion todavia no tiene ofertas registradas.</p>
+    }
+    else
+    {
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <caption class="solo-lectores">Ofertas de la licitacion @Model.Codigo</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Proveedor</th>
+                        <th scope="col" class="numerico">Monto</th>
+                        <th scope="col">Registrada</th>
+                        <th scope="col">Condicion</th>
+                        <th scope="col"><span class="solo-lectores">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (OfertaDto oferta in Model.Ofertas)
+                    {
+                        <tr data-oferta="@oferta.Id">
+                            <td>@oferta.NombreProveedor</td>
+                            <td class="numerico" data-monto>@Montos.Formatear(oferta.Monto)</td>
+                            <td>@FormateadorFecha.FechaHora(oferta.FechaRegistro)</td>
+                            <td>
+                                @if (oferta.EsMejorOferta)
+                                {
+                                    <span class="etiqueta etiqueta--mejor">Mejor oferta</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!cerrada)
+                                {
+                                    <div class="grupo-botones">
+                                        <a class="boton boton--secundario boton--pequeno"
+                                           asp-controller="Ofertas" asp-action="Editar" asp-route-id="@oferta.Id">Editar</a>
+                                        <a class="boton boton--secundario boton--pequeno"
+                                           asp-controller="Ofertas" asp-action="Eliminar" asp-route-id="@oferta.Id">Eliminar</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="campo__ayuda">Conservada como evidencia</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

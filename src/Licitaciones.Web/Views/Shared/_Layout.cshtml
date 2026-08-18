@@ -1,0 +1,94 @@
+@*
+    Plantilla comun de todas las paginas.
+
+    El tema visual se escribe como atributo data-tema del elemento <html> desde el servidor.
+    Resolverlo aqui y no en el navegador evita que la pagina se pinte en claro y salte a oscuro
+    despues de cargar, y permite que las pruebas funcionales fijen el tema con una cookie.
+*@
+@{
+    string temaActual = Preferencias.Tema;
+    string rutaActual = Context.Request.Path + Context.Request.QueryString;
+    string controladorActual = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+
+    string Activo(string controlador) =>
+        string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase)
+            ? "activo"
+            : string.Empty;
+}
+<!DOCTYPE html>
+<html lang="es-CR" data-tema="@temaActual">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] ?? "Sistema de Gestion de Licitaciones")</title>
+    <meta name="description" content="Sistema de gestion de licitaciones, proveedores y ofertas economicas en colones costarricenses." />
+    <link rel="stylesheet" href="~/css/sitio.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="enlace-saltar" href="#contenido">Saltar al contenido principal</a>
+
+    <header class="barra-superior">
+        <div class="contenedor barra-superior__interior">
+            <a class="marca" asp-controller="Inicio" asp-action="Index">
+                <span class="marca__sigla" aria-hidden="true">SGL</span>
+                <span>Gestion de Licitaciones</span>
+            </a>
+
+            <button type="button" class="boton-menu" data-menu-boton
+                    aria-expanded="false" aria-controls="navegacion-principal"
+                    aria-label="Abrir el menu de navegacion">&#9776;</button>
+
+            <nav class="navegacion" id="navegacion-principal" data-menu aria-label="Navegacion principal">
+                <a class="@Activo("Inicio")" asp-controller="Inicio" asp-action="Index">Inicio</a>
+                <a class="@Activo("Licitaciones")" asp-controller="Licitaciones" asp-action="Index">Licitaciones</a>
+                <a class="@Activo("Proveedores")" asp-controller="Proveedores" asp-action="Index">Proveedores</a>
+                <a class="@Activo("Ofertas")" asp-controller="Ofertas" asp-action="Index">Ofertas</a>
+                <a class="@Activo("NivelesAprobacion")" asp-controller="NivelesAprobacion" asp-action="Index">Niveles de aprobacion</a>
+                <a class="@Activo("TiposCambio")" asp-controller="TiposCambio" asp-action="Index">Tipo de cambio</a>
+                <a href="/swagger" rel="noopener">API</a>
+            </nav>
+
+            <div class="acciones-barra">
+                @* Ambos alternadores son formularios POST para que funcionen sin JavaScript. *@
+                <form method="post" asp-controller="Inicio" asp-action="AlternarMoneda">
+                    <input type="hidden" name="retorno" value="@rutaActual" />
+                    <button type="submit" class="alternador"
+                            title="Alternar entre colones y dolares"
+                            aria-label="Mostrar montos en @(Preferencias.MostrarEnDolares ? "colones" : "dolares")">
+                        <span aria-hidden="true">@(Preferencias.MostrarEnDolares ? "US$" : "&#8353;")</span>
+                        <span>@Preferencias.Moneda</span>
+                    </button>
+                </form>
+
+                <form method="post" asp-controller="Inicio" asp-action="AlternarTema">
+                    <input type="hidden" name="retorno" value="@rutaActual" />
+                    <button type="submit" class="alternador" data-alternar-tema
+                            title="Alternar entre modo claro y modo oscuro"
+                            aria-label="Cambiar a modo @(Preferencias.EsTemaOscuro ? "claro" : "oscuro")">
+                        <span aria-hidden="true">@(Preferencias.EsTemaOscuro ? "&#9788;" : "&#9789;")</span>
+                        <span>@(Preferencias.EsTemaOscuro ? "Claro" : "Oscuro")</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main id="contenido">
+        <div class="contenedor">
+            <partial name="_Mensajes" />
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="pie">
+        <div class="contenedor">
+            Universidad Tecnica Nacional &middot; Ingenieria en Tecnologias de Informacion &middot;
+            ITI-822 Metodologias Agiles de Desarrollo de Software &middot;
+            Proyecto final desarrollado con Extreme Programming.
+        </div>
+    </footer>
+
+    <script src="~/js/sitio.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

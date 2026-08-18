@@ -1,0 +1,35 @@
+@*
+    Muestra los mensajes de exito, advertencia y error que viajan en TempData.
+
+    Se coloca una sola vez en la plantilla para que todas las pantallas informen del resultado
+    de la ultima operacion de la misma forma (requisito 9).
+*@
+@{
+    string? exito = TempData[ControladorBase.ClaveMensajeExito] as string;
+    string? advertencia = TempData[ControladorBase.ClaveMensajeAdvertencia] as string;
+    string? error = TempData[ControladorBase.ClaveMensajeError] as string;
+}
+
+@if (!string.IsNullOrWhiteSpace(exito))
+{
+    <div class="mensaje mensaje--exito" role="status" data-mensaje="exito">
+        <span aria-hidden="true">&#10004;</span>
+        <span>@exito</span>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(advertencia))
+{
+    <div class="mensaje mensaje--advertencia" role="status" data-mensaje="advertencia">
+        <span aria-hidden="true">&#9888;</span>
+        <span>@advertencia</span>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(error))
+{
+    <div class="mensaje mensaje--error" role="alert" data-mensaje="error">
+        <span aria-hidden="true">&#10007;</span>
+        <span>@error</span>
+    </div>
+}

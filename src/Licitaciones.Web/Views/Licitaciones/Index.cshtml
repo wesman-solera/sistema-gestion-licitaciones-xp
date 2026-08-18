@@ -1,0 +1,113 @@
+@model ListadoViewModel<LicitacionResumenDto>
+@{
+    ViewData["Title"] = "Licitaciones";
+    var estadoFiltrado = ViewData["EstadoFiltrado"] as EstadoLicitacion?;
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Licitaciones</h1>
+        <p>Procesos de compra registrados en el sistema.</p>
+    </div>
+    <a class="boton boton--primario" asp-action="Crear">Nueva licitacion</a>
+</div>
+
+<div class="tarjeta">
+    <form method="get" class="filtros">
+        <div class="campo">
+            <label for="buscar">Buscar por codigo o titulo</label>
+            <input type="search" id="buscar" name="buscar" value="@Model.Parametros.Buscar"
+                   placeholder="Ej.: LIC-2026-001" />
+        </div>
+        <div class="campo">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado">
+                <option value="">Todos</option>
+                @foreach (EstadoLicitacion valor in Enum.GetValues<EstadoLicitacion>())
+                {
+                    <option value="@valor" selected="@(estadoFiltrado == valor)">@valor</option>
+                }
+            </select>
+        </div>
+        <div class="campo">
+            <label for="tamanoPagina">Por pagina</label>
+            <select id="tamanoPagina" name="tamanoPagina">
+                @foreach (int tamano in new[] { 10, 20, 50, 100 })
+                {
+                    <option value="@tamano" selected="@(Model.Parametros.TamanoPagina == tamano)">@tamano</option>
+                }
+            </select>
+        </div>
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--secundario">Filtrar</button>
+            <a class="boton boton--secundario" asp-action="Index">Limpiar</a>
+        </div>
+    </form>
+
+    @if (Model.Pagina.Elementos.Count == 0)
+    {
+        <p class="sin-datos">No hay licitaciones que coincidan con el filtro aplicado.</p>
+    }
+    else
+    {
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <caption class="solo-lectores">Listado de licitaciones registradas</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            <a asp-all-route-data="@Model.ValoresRuta(pagina: 1, ordenarPor: "codigo", descendente: Model.ProximaDireccion("codigo"))">Codigo</a>
+                        </th>
+                        <th scope="col">
+                            <a asp-all-route-data="@Model.ValoresRuta(pagina: 1, ordenarPor: "titulo", descendente: Model.ProximaDireccion("titulo"))">Titulo</a>
+                        </th>
+                        <th scope="col">Estado</th>
+                        <th scope="col" class="numerico">
+                            <a asp-all-route-data="@Model.ValoresRuta(pagina: 1, ordenarPor: "presupuesto", descendente: Model.ProximaDireccion("presupuesto"))">Presupuesto</a>
+                        </th>
+                        <th scope="col">
+                            <a asp-all-route-data="@Model.ValoresRuta(pagina: 1, ordenarPor: "fechacierre", descendente: Model.ProximaDireccion("fechacierre"))">Cierre</a>
+                        </th>
+                        <th scope="col" class="numerico">Ofertas</th>
+                        <th scope="col"><span class="solo-lectores">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (LicitacionResumenDto licitacion in Model.Pagina.Elementos)
+                    {
+                        <tr data-licitacion="@licitacion.Codigo">
+                            <td><a asp-action="Detalle" asp-route-id="@licitacion.Id">@licitacion.Codigo</a></td>
+                            <td>@licitacion.Titulo</td>
+                            <td>
+                                <span class="etiqueta etiqueta--@licitacion.EstadoEfectivo.ToString().ToLowerInvariant()">
+                                    @licitacion.EstadoEfectivo
+                                </span>
+                                @if (licitacion.Estado != licitacion.EstadoEfectivo)
+                                {
+                                    @* El enunciado (8.1) admite que la columna diga Publicada tras el
+                                       vencimiento; se explica en pantalla para que no parezca un error. *@
+                                    <span class="campo__ayuda">Vencida (registrada como @licitacion.Estado)</span>
+                                }
+                            </td>
+                            <td class="numerico" data-monto>@Montos.Formatear(licitacion.PresupuestoEstimado)</td>
+                            <td>@FormateadorFecha.FechaHora(licitacion.FechaCierre)</td>
+                            <td class="numerico">@licitacion.CantidadOfertas</td>
+                            <td>
+                                <div class="grupo-botones">
+                                    <a class="boton boton--secundario boton--pequeno" asp-action="Detalle" asp-route-id="@licitacion.Id">Ver</a>
+                                    @if (licitacion.Estado != EstadoLicitacion.Cerrada)
+                                    {
+                                        <a class="boton boton--secundario boton--pequeno" asp-action="Editar" asp-route-id="@licitacion.Id">Editar</a>
+                                    }
+                                    <a class="boton boton--secundario boton--pequeno" asp-action="Eliminar" asp-route-id="@licitacion.Id">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Paginacion" model="PaginacionViewModel.Desde(Model)" />
+    }
+</div>

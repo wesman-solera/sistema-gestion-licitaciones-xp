@@ -1,0 +1,48 @@
+@model OfertaDto
+@{
+    ViewData["Title"] = "Eliminar oferta";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Eliminar oferta</h1>
+        <p>Esta accion requiere confirmacion.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <div class="mensaje mensaje--advertencia" role="alert">
+        <span aria-hidden="true">&#9888;</span>
+        <span>
+            La oferta se eliminara de forma definitiva. Si la licitacion ya cerro o vencio, el
+            sistema rechazara la operacion: esas ofertas se conservan como evidencia del proceso.
+        </span>
+    </div>
+
+    <dl class="definiciones">
+        <div>
+            <dt>Licitacion</dt>
+            <dd>@Model.CodigoLicitacion</dd>
+        </div>
+        <div>
+            <dt>Proveedor</dt>
+            <dd>@Model.NombreProveedor</dd>
+        </div>
+        <div>
+            <dt>Monto ofertado</dt>
+            <dd>@Montos.Formatear(Model.Monto)</dd>
+        </div>
+        <div>
+            <dt>Registrada</dt>
+            <dd>@FormateadorFecha.FechaHora(Model.FechaRegistro)</dd>
+        </div>
+    </dl>
+
+    <form method="post" asp-action="Eliminar" asp-route-id="@Model.Id" data-una-vez>
+        <input type="hidden" name="licitacionId" value="@Model.LicitacionId" />
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--peligro">Si, eliminar</button>
+            <a class="boton boton--secundario" asp-controller="Licitaciones" asp-action="Detalle" asp-route-id="@Model.LicitacionId">Cancelar</a>
+        </div>
+    </form>
+</div>

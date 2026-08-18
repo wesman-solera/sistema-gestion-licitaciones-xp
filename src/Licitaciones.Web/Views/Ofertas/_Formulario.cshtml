@@ -1,0 +1,64 @@
+@model OfertaFormulario
+
+<partial name="_ResumenValidacion" />
+
+<div class="campo">
+    <label asp-for="LicitacionId">Licitacion</label>
+    <select asp-for="LicitacionId" disabled="@Model.EsEdicion">
+        <option value="">Seleccione una licitacion</option>
+        @foreach (LicitacionResumenDto licitacion in Model.LicitacionesDisponibles)
+        {
+            <option value="@licitacion.Id" selected="@(Model.LicitacionId == licitacion.Id)">
+                @licitacion.Codigo &mdash; @licitacion.Titulo
+                (presupuesto @Montos.Formatear(licitacion.PresupuestoEstimado))
+            </option>
+        }
+    </select>
+    <span asp-validation-for="LicitacionId" class="campo__error"></span>
+    @if (Model.EsEdicion)
+    {
+        @* Un control deshabilitado no viaja en el envio: se replica en un campo oculto para que
+           el enlace de modelo siga recibiendo el valor. *@
+        <input type="hidden" asp-for="LicitacionId" />
+        <span class="campo__ayuda">La licitacion de una oferta registrada no puede cambiarse.</span>
+    }
+    else
+    {
+        <span class="campo__ayuda">Solo se muestran licitaciones publicadas y vigentes.</span>
+    }
+</div>
+
+<div class="campo">
+    <label asp-for="ProveedorId">Proveedor</label>
+    <select asp-for="ProveedorId" disabled="@Model.EsEdicion">
+        <option value="">Seleccione un proveedor</option>
+        @foreach (ProveedorDto proveedor in Model.ProveedoresDisponibles)
+        {
+            <option value="@proveedor.Id" selected="@(Model.ProveedorId == proveedor.Id)">@proveedor.Nombre</option>
+        }
+    </select>
+    <span asp-validation-for="ProveedorId" class="campo__error"></span>
+    @if (Model.EsEdicion)
+    {
+        <input type="hidden" asp-for="ProveedorId" />
+        <span class="campo__ayuda">El proveedor de una oferta registrada no puede cambiarse.</span>
+    }
+    else
+    {
+        <span class="campo__ayuda">Cada proveedor puede presentar una unica oferta por licitacion.</span>
+    }
+</div>
+
+<div class="campo">
+    <label asp-for="MontoOfertadoCrc">Monto ofertado (CRC)</label>
+    <input asp-for="MontoOfertadoCrc" type="number" step="0.01" min="0.01" data-minimo="0.01" />
+    <span asp-validation-for="MontoOfertadoCrc" class="campo__error"></span>
+    <span class="campo__ayuda">
+        Debe ser mayor que cero y no puede superar el presupuesto de la licitacion.
+        Una oferta igual al presupuesto es valida.
+        @if (Model.PresupuestoReferencia is decimal presupuesto)
+        {
+            <text>Presupuesto de referencia: @FormateadorMonto.FormatearColones(presupuesto).</text>
+        }
+    </span>
+</div>

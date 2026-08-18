@@ -1,0 +1,81 @@
+@model ListadoViewModel<TipoCambioDto>
+@{
+    ViewData["Title"] = "Tipos de cambio";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Tipos de cambio</h1>
+        <p>Valor administrable de colones por dolar, usado solo para la visualizacion.</p>
+    </div>
+    <a class="boton boton--primario" asp-action="Crear">Nuevo tipo de cambio</a>
+</div>
+
+<div class="tarjeta">
+    <div class="mensaje mensaje--info" role="note">
+        <span aria-hidden="true">&#9432;</span>
+        <span>
+            El sistema administra este valor localmente y funciona sin conexion a Internet.
+            Solo puede haber un tipo de cambio activo: al activar uno, el anterior se desactiva
+            automaticamente dentro de la misma transaccion. Los montos oficiales se almacenan
+            siempre en colones y no se modifican al cambiar este valor.
+        </span>
+    </div>
+
+    @if (Model.Pagina.Elementos.Count == 0)
+    {
+        <p class="sin-datos">Todavia no hay tipos de cambio registrados.</p>
+    }
+    else
+    {
+        <div class="tabla-contenedor">
+            <table class="tabla">
+                <caption class="solo-lectores">Tipos de cambio registrados</caption>
+                <thead>
+                    <tr>
+                        <th scope="col" class="numerico">Colones por dolar</th>
+                        <th scope="col">Vigencia</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col"><span class="solo-lectores">Acciones</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (TipoCambioDto tipoCambio in Model.Pagina.Elementos)
+                    {
+                        <tr data-tipo-cambio="@tipoCambio.Id">
+                            <td class="numerico">@FormateadorMonto.FormatearColones(tipoCambio.CrcPorUsd)</td>
+                            <td>@FormateadorFecha.Fecha(tipoCambio.FechaVigencia)</td>
+                            <td>
+                                @if (tipoCambio.Activo)
+                                {
+                                    <span class="etiqueta etiqueta--conveniente" data-activo>Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="etiqueta etiqueta--borrador">Inactivo</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="grupo-botones">
+                                    @if (!tipoCambio.Activo)
+                                    {
+                                        <form method="post" asp-action="Activar" asp-route-id="@tipoCambio.Id" data-una-vez>
+                                            <button type="submit" class="boton boton--primario boton--pequeno">Activar</button>
+                                        </form>
+                                    }
+                                    <a class="boton boton--secundario boton--pequeno" asp-action="Editar" asp-route-id="@tipoCambio.Id">Editar</a>
+                                    @if (!tipoCambio.Activo)
+                                    {
+                                        <a class="boton boton--secundario boton--pequeno" asp-action="Eliminar" asp-route-id="@tipoCambio.Id">Eliminar</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Paginacion" model="PaginacionViewModel.Desde(Model)" />
+    }
+</div>

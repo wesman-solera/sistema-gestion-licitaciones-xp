@@ -1,0 +1,25 @@
+@model LicitacionFormulario
+@{
+    ViewData["Title"] = $"Editar licitacion {Model.Codigo}";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Editar licitacion</h1>
+        <p>@Model.Codigo</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Editar" asp-route-id="@Model.Id" data-una-vez>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CodigoEditable" />
+
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Guardar cambios</button>
+            <a class="boton boton--secundario" asp-action="Detalle" asp-route-id="@Model.Id">Cancelar</a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,27 @@
+@model NivelAprobacionFormulario
+
+<partial name="_ResumenValidacion" />
+
+<div class="campo">
+    <label asp-for="MontoMinimoCrc">Monto minimo (CRC)</label>
+    <input asp-for="MontoMinimoCrc" type="number" step="0.01" min="0.01" data-minimo="0.01" />
+    <span asp-validation-for="MontoMinimoCrc" class="campo__error"></span>
+    <span class="campo__ayuda">Inclusivo. Debe ser mayor que cero.</span>
+</div>
+
+<div class="campo">
+    <label asp-for="MontoMaximoCrc">Monto maximo (CRC)</label>
+    <input asp-for="MontoMaximoCrc" type="number" step="0.01" min="0.01" data-minimo="0.01" />
+    <span asp-validation-for="MontoMaximoCrc" class="campo__error"></span>
+    <span class="campo__ayuda">
+        Inclusivo. Dejelo vacio para crear el rango abierto, que cubre desde el minimo hacia
+        arriba sin limite. Solo puede existir un rango abierto en toda la tabla.
+    </span>
+</div>
+
+<div class="campo">
+    <label asp-for="Aprobador">Aprobador</label>
+    <input asp-for="Aprobador" maxlength="150" />
+    <span asp-validation-for="Aprobador" class="campo__error"></span>
+    <span class="campo__ayuda">Cargo o instancia responsable, por ejemplo &laquo;Gerencia&raquo;.</span>
+</div>

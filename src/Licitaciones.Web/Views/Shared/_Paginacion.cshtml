@@ -1,0 +1,40 @@
+@*
+    Controles de paginacion reutilizables.
+
+    Recibe los valores de ruta ya calculados por el modelo del listado, de modo que los enlaces
+    conservan el filtro de busqueda, el orden y los filtros propios de cada modulo.
+*@
+@model PaginacionViewModel
+
+@if (Model.TotalElementos > 0)
+{
+    <nav class="paginacion" aria-label="Paginacion de resultados">
+        <span>
+            Mostrando @Model.Desde a @Model.Hasta de @Model.TotalElementos registro@(Model.TotalElementos == 1 ? "" : "s")
+        </span>
+
+        <div class="paginacion__controles">
+            @if (Model.TienePrevia)
+            {
+                <a asp-all-route-data="@Model.RutaAnterior" aria-label="Pagina anterior">&laquo; Anterior</a>
+            }
+            else
+            {
+                <span class="inactivo" aria-hidden="true">&laquo; Anterior</span>
+            }
+
+            <span class="actual" aria-current="page">
+                Pagina @Model.PaginaActual de @Model.TotalPaginas
+            </span>
+
+            @if (Model.TieneSiguiente)
+            {
+                <a asp-all-route-data="@Model.RutaSiguiente" aria-label="Pagina siguiente">Siguiente &raquo;</a>
+            }
+            else
+            {
+                <span class="inactivo" aria-hidden="true">Siguiente &raquo;</span>
+            }
+        </div>
+    </nav>
+}

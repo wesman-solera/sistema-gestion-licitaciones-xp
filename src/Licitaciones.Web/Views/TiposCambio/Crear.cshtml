@@ -1,0 +1,22 @@
+@model TipoCambioFormulario
+@{
+    ViewData["Title"] = "Nuevo tipo de cambio";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Nuevo tipo de cambio</h1>
+        <p>Registre el valor con el que se calcularan los equivalentes en dolares.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Crear" data-una-vez>
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Registrar</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>

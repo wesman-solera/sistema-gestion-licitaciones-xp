@@ -1,0 +1,22 @@
+@model LicitacionFormulario
+@{
+    ViewData["Title"] = "Nueva licitacion";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Nueva licitacion</h1>
+        <p>La licitacion se crea en estado Borrador y podra publicarse cuando este completa.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Crear" data-una-vez>
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Crear licitacion</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>

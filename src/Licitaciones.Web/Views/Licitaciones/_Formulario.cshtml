@@ -1,0 +1,45 @@
+@model LicitacionFormulario
+
+<partial name="_ResumenValidacion" />
+
+<div class="campo">
+    <label asp-for="Codigo">Codigo</label>
+    <input asp-for="Codigo" maxlength="50" autocomplete="off"
+           readonly="@(Model.EsEdicion && !Model.CodigoEditable)" />
+    <span asp-validation-for="Codigo" class="campo__error"></span>
+    @if (Model.EsEdicion && !Model.CodigoEditable)
+    {
+        <span class="campo__ayuda">El codigo solo puede modificarse mientras la licitacion esta en Borrador.</span>
+    }
+    else
+    {
+        <span class="campo__ayuda">Debe ser unico. Se ignoran los espacios laterales y las mayusculas.</span>
+    }
+</div>
+
+<div class="campo">
+    <label asp-for="Titulo">Titulo</label>
+    <input asp-for="Titulo" maxlength="300" />
+    <span asp-validation-for="Titulo" class="campo__error"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="PresupuestoEstimadoCrc">Presupuesto estimado (CRC)</label>
+    <input asp-for="PresupuestoEstimadoCrc" type="number" step="0.01" min="0.01" data-minimo="0.01" />
+    <span asp-validation-for="PresupuestoEstimadoCrc" class="campo__error"></span>
+    <span class="campo__ayuda">
+        Debe ser mayor que cero y no puede quedar por debajo de una oferta ya registrada.
+    </span>
+</div>
+
+<div class="campo">
+    <label asp-for="FechaCierre">Fecha y hora de cierre</label>
+    @* El control datetime-local cumple el requisito de la seccion 8.2: la fecha se elige con
+       calendario y hora, no escribiendo texto libre. *@
+    <input asp-for="FechaCierre" type="datetime-local" />
+    <span asp-validation-for="FechaCierre" class="campo__error"></span>
+    <span class="campo__ayuda">
+        Hora de Costa Rica. Debe ser posterior al momento actual. A partir de este instante la
+        licitacion deja de aceptar ofertas.
+    </span>
+</div>

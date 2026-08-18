@@ -1,0 +1,61 @@
+@model LicitacionDetalleDto
+@{
+    ViewData["Title"] = $"Eliminar licitacion {Model.Codigo}";
+    bool tieneOfertas = Model.Ofertas.Count > 0;
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Eliminar licitacion</h1>
+        <p>Esta accion requiere confirmacion.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <div class="mensaje mensaje--advertencia" role="alert">
+        <span aria-hidden="true">&#9888;</span>
+        <span>
+            @if (tieneOfertas)
+            {
+                <text>
+                    Esta licitacion tiene @Model.Ofertas.Count oferta@(Model.Ofertas.Count == 1 ? "" : "s")
+                    registrada@(Model.Ofertas.Count == 1 ? "" : "s"). No se eliminara fisicamente:
+                    se marcara como eliminada y las ofertas se conservaran como evidencia del proceso.
+                </text>
+            }
+            else
+            {
+                <text>
+                    Esta licitacion no tiene ofertas asociadas, por lo que se eliminara de forma
+                    definitiva. La accion no puede deshacerse.
+                </text>
+            }
+        </span>
+    </div>
+
+    <dl class="definiciones">
+        <div>
+            <dt>Codigo</dt>
+            <dd>@Model.Codigo</dd>
+        </div>
+        <div>
+            <dt>Titulo</dt>
+            <dd>@Model.Titulo</dd>
+        </div>
+        <div>
+            <dt>Estado</dt>
+            <dd>@Model.EstadoEfectivo</dd>
+        </div>
+        <div>
+            <dt>Presupuesto</dt>
+            <dd>@Montos.Formatear(Model.PresupuestoEstimado)</dd>
+        </div>
+    </dl>
+
+    <form method="post" asp-action="Eliminar" asp-route-id="@Model.Id" data-una-vez>
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--peligro">Si, eliminar</button>
+            <a class="boton boton--secundario" asp-action="Detalle" asp-route-id="@Model.Id">Cancelar</a>
+        </div>
+    </form>
+</div>

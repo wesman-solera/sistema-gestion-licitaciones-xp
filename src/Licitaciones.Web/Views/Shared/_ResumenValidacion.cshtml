@@ -1,0 +1,30 @@
+@*
+    Resumen de los errores que no estan asociados a ningun campo concreto.
+
+    Los errores de campo se muestran junto a su control, como pide el requisito 9. Aqui solo
+    aparecen los que el servidor no pudo atribuir a un campo, para que no se pierdan.
+*@
+@if (!ViewData.ModelState.IsValid)
+{
+    var generales = ViewData.ModelState
+        .Where(e => string.IsNullOrEmpty(e.Key))
+        .SelectMany(e => e.Value!.Errors)
+        .Select(e => e.ErrorMessage)
+        .ToList();
+
+    if (generales.Count > 0)
+    {
+        <div class="mensaje mensaje--error" role="alert" data-mensaje="validacion">
+            <span aria-hidden="true">&#10007;</span>
+            <div>
+                <strong>No fue posible completar la operacion:</strong>
+                <ul>
+                    @foreach (string mensaje in generales)
+                    {
+                        <li>@mensaje</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+}

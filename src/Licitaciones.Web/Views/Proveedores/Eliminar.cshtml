@@ -1,0 +1,57 @@
+@model ProveedorDto
+@{
+    ViewData["Title"] = "Eliminar proveedor";
+    bool tieneOfertas = Model.CantidadOfertas > 0;
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Eliminar proveedor</h1>
+        <p>Esta accion requiere confirmacion.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <div class="mensaje mensaje--advertencia" role="alert">
+        <span aria-hidden="true">&#9888;</span>
+        <span>
+            @if (tieneOfertas)
+            {
+                <text>
+                    Este proveedor tiene @Model.CantidadOfertas oferta@(Model.CantidadOfertas == 1 ? "" : "s")
+                    registrada@(Model.CantidadOfertas == 1 ? "" : "s"). No se eliminara fisicamente:
+                    se marcara como eliminado y sus ofertas se conservaran como evidencia.
+                </text>
+            }
+            else
+            {
+                <text>
+                    Este proveedor no tiene ofertas asociadas, por lo que se eliminara de forma
+                    definitiva. La accion no puede deshacerse.
+                </text>
+            }
+        </span>
+    </div>
+
+    <dl class="definiciones">
+        <div>
+            <dt>Nombre</dt>
+            <dd>@Model.Nombre</dd>
+        </div>
+        <div>
+            <dt>Ofertas presentadas</dt>
+            <dd>@Model.CantidadOfertas</dd>
+        </div>
+        <div>
+            <dt>Registrado</dt>
+            <dd>@FormateadorFecha.FechaHora(Model.CreatedAt)</dd>
+        </div>
+    </dl>
+
+    <form method="post" asp-action="Eliminar" asp-route-id="@Model.Id" data-una-vez>
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--peligro">Si, eliminar</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>

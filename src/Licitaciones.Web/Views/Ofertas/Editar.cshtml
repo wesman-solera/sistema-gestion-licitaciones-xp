@@ -1,0 +1,24 @@
+@model OfertaFormulario
+@{
+    ViewData["Title"] = "Editar oferta";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Editar oferta</h1>
+        <p>Solo puede modificarse el monto, y unicamente mientras la licitacion siga abierta.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Editar" asp-route-id="@Model.Id" data-una-vez>
+        <input type="hidden" asp-for="Id" />
+
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Guardar cambios</button>
+            <a class="boton boton--secundario" asp-controller="Licitaciones" asp-action="Detalle" asp-route-id="@Model.LicitacionId">Cancelar</a>
+        </div>
+    </form>
+</div>

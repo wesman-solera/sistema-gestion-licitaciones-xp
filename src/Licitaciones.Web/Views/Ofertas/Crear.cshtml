@@ -1,0 +1,22 @@
+@model OfertaFormulario
+@{
+    ViewData["Title"] = "Registrar oferta";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Registrar oferta</h1>
+        <p>La oferta se rechaza si supera el presupuesto o si la licitacion ya cerro.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Crear" data-una-vez>
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Registrar oferta</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>

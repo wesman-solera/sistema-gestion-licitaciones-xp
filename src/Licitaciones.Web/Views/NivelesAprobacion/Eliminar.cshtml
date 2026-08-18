@@ -1,0 +1,43 @@
+@model NivelAprobacionDto
+@{
+    ViewData["Title"] = "Eliminar nivel de aprobacion";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Eliminar nivel de aprobacion</h1>
+        <p>Esta accion requiere confirmacion.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <div class="mensaje mensaje--advertencia" role="alert">
+        <span aria-hidden="true">&#9888;</span>
+        <span>
+            Al eliminar este rango, los montos que cubria dejaran de tener un aprobador asignado
+            hasta que se configure otro rango que los incluya.
+        </span>
+    </div>
+
+    <dl class="definiciones">
+        <div>
+            <dt>Monto minimo</dt>
+            <dd>@Montos.Formatear(Model.MontoMinimo)</dd>
+        </div>
+        <div>
+            <dt>Monto maximo</dt>
+            <dd>@(Model.EsRangoAbierto ? "Sin limite" : Montos.Formatear(Model.MontoMaximo))</dd>
+        </div>
+        <div>
+            <dt>Aprobador</dt>
+            <dd>@Model.Aprobador</dd>
+        </div>
+    </dl>
+
+    <form method="post" asp-action="Eliminar" asp-route-id="@Model.Id" data-una-vez>
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--peligro">Si, eliminar</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,22 @@
+@model ProveedorFormulario
+@{
+    ViewData["Title"] = "Nuevo proveedor";
+}
+
+<div class="encabezado-pagina">
+    <div>
+        <h1>Nuevo proveedor</h1>
+        <p>Registre la empresa o persona que presentara ofertas.</p>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <form method="post" asp-action="Crear" data-una-vez>
+        <partial name="_Formulario" model="Model" />
+
+        <div class="grupo-botones">
+            <button type="submit" class="boton boton--primario">Registrar proveedor</button>
+            <a class="boton boton--secundario" asp-action="Index">Cancelar</a>
+        </div>
+    </form>
+</div>
