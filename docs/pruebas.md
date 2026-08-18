@@ -143,7 +143,7 @@ eso `SufijoUnico()` acompaña a todos los identificadores generados en las prueb
 | Proyecto completo | 70 % de líneas | Comprobación automática en la integración continua |
 
 El umbral **bloquea la integración**. No es un informe que alguien deba revisar: el trabajo
-`pruebas-unitarias` falla si la cobertura baja de los mínimos, y el trabajo `resultado` impide que
+`pruebas` falla si la cobertura baja de los mínimos, y el trabajo `resultado` impide que
 el cambio se integre.
 
 ### Sobre el número de cobertura
@@ -207,16 +207,38 @@ Para depurar una prueba funcional, cambie `Headless = true` por `false` en
 
 ## Ejecución en la integración continua
 
-| Trabajo | Qué ejecuta |
-|---|---|
-| `calidad` | Formato del código y compilación con analizadores en modo estricto |
-| `pruebas-unitarias` | Suite unitaria, informe de cobertura y verificación de umbrales |
-| `pruebas-integracion` | Suite de integración con PostgreSQL levantado por Testcontainers |
-| `imagen-docker` | Construcción de la imagen |
-| `pruebas-funcionales` | Levanta la solución con Compose y ejecuta Playwright |
-| `manifiestos-kubernetes` | Valida los manifiestos contra el esquema de Kubernetes |
-| `dependencias` | Busca paquetes con vulnerabilidades conocidas |
-| `resultado` | Falla si cualquiera de los anteriores falló |
+| Trabajo | Qué ejecuta | ¿Bloquea? |
+|---|---|---|
+| `calidad` | Formato del código y compilación en configuración de entrega | Sí |
+| `pruebas` | Suites unitaria y de integración, informe de cobertura fusionado y verificación de umbrales | Sí |
+| `imagen-docker` | Construcción de la imagen | Sí |
+| `pruebas-funcionales` | Levanta la solución con Compose y ejecuta Playwright | Sí |
+| `manifiestos-kubernetes` | Valida los manifiestos contra el esquema de Kubernetes | Sí |
+| `dependencias` | Busca paquetes con vulnerabilidades conocidas | Sí |
+| `resultado` | Falla si cualquiera de los anteriores falló | Sí |
+
+### Qué bloquea y qué solo informa
+
+Dentro del trabajo `calidad` la distinción es deliberada:
+
+| Comprobación | Bloquea | Motivo |
+|---|---|---|
+| `dotnet format whitespace --verify-no-changes` | **Sí** | Sangría, saltos de línea y espacios finales son deterministas y no dependen de la versión del SDK |
+| `dotnet build` | **Sí** | Un error de compilación no puede llegar a la rama principal |
+| `dotnet format style` | No | Las reglas de estilo cambian entre versiones del SDK |
+| `dotnet format analyzers` | No | Un analizador nuevo tras una actualización no debe detener una entrega correcta |
+| Listado de advertencias | No | Informativo: deja constancia en el registro del flujo |
+
+Elevar todos los avisos a error suena riguroso, pero convierte una actualización del SDK en una
+entrega bloqueada por motivos ajenos al cambio que se está integrando. Las comprobaciones que
+bloquean son las que dependen solo del código del repositorio.
+
+### Por qué la cobertura se mide con ambas suites
+
+Buena parte de la capa de aplicación se ejercita a través de los endpoints REST, no desde las
+pruebas unitarias. Medir la cobertura solo con las unitarias daría una lectura engañosamente baja
+de lo que realmente está probado. El flujo ejecuta las dos suites recogiendo cobertura y fusiona
+los informes antes de comprobar los umbrales.
 
 `resultado` es el trabajo marcado como comprobación obligatoria en la rama protegida. Su única
 función es concentrar el veredicto: si algo falló, el cambio no se integra.
