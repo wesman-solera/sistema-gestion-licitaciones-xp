@@ -1,0 +1,374 @@
+# ---------------------------------------------------------------------------------------------
+# Integracion continua del Sistema de Gestion de Licitaciones.
+#
+# Cubre los seis puntos de la seccion 13.3 del enunciado: restaurar y compilar, ejecutar pruebas
+# con cobertura, comprobar formato y analisis estatico, construir la imagen Docker, validar los
+# manifiestos de Kubernetes y revisar dependencias vulnerables.
+#
+# La rama protegida exige que este flujo termine en verde, de modo que un cambio que rompa la
+# compilacion, las pruebas o la cobertura no puede integrarse.
+# ---------------------------------------------------------------------------------------------
+name: Integracion continua
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  # Umbrales de la seccion 12.4. Se comprueban de forma automatica mas abajo.
+  COBERTURA_MINIMA_TOTAL: "70"
+  COBERTURA_MINIMA_NUCLEO: "80"
+
+jobs:
+  # -------------------------------------------------------------------------------------------
+  calidad:
+    name: Formato y analisis estatico
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restaurar dependencias
+        run: dotnet restore Licitaciones.sln
+
+      - name: Comprobar el formato del codigo
+        # --verify-no-changes falla si algun archivo no cumple las reglas de .editorconfig.
+        run: dotnet format Licitaciones.sln --verify-no-changes --verbosity diagnostic
+
+      - name: Compilar con los analizadores activos
+        # Los avisos de los analizadores se elevan a error en la integracion continua, no en el
+        # desarrollo local: asi no entorpecen el ciclo corto de XP pero tampoco llegan a main.
+        run: dotnet build Licitaciones.sln --configuration Release --no-restore /warnaserror
+
+  # -------------------------------------------------------------------------------------------
+  pruebas-unitarias:
+    name: Pruebas unitarias y cobertura
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restaurar dependencias
+        run: dotnet restore Licitaciones.sln
+
+      - name: Compilar
+        run: dotnet build Licitaciones.sln --configuration Release --no-restore
+
+      - name: Ejecutar las pruebas unitarias con cobertura
+        run: |
+          dotnet test tests/Licitaciones.UnitTests/Licitaciones.UnitTests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=unitarias.trx" \
+            --results-directory ./resultados \
+            --collect:"XPlat Code Coverage"
+
+      - name: Instalar el generador de informes de cobertura
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generar el informe de cobertura
+        run: |
+          reportgenerator \
+            -reports:"./resultados/**/coverage.cobertura.xml" \
+            -targetdir:"./resultados/cobertura" \
+            -reporttypes:"Cobertura;TextSummary;Html"
+
+      - name: Verificar los umbrales de cobertura
+        # El enunciado exige 80 % en Domain y Application, y 70 % en el proyecto completo.
+        # La comprobacion se automatiza para que el incumplimiento bloquee la integracion en
+        # lugar de quedar como una nota que nadie revisa.
+        run: |
+          python3 - <<'PYTHON'
+          import os
+          import sys
+          import xml.etree.ElementTree as ET
+
+          arbol = ET.parse('./resultados/cobertura/Cobertura.xml')
+          raiz = arbol.getroot()
+
+          total = float(raiz.get('line-rate', 0)) * 100
+          minimo_total = float(os.environ['COBERTURA_MINIMA_TOTAL'])
+          minimo_nucleo = float(os.environ['COBERTURA_MINIMA_NUCLEO'])
+
+          fallos = []
+          print(f'Cobertura total: {total:.2f} % (minimo {minimo_total:.0f} %)')
+
+          if total < minimo_total:
+              fallos.append(f'La cobertura total es {total:.2f} %, por debajo del {minimo_total:.0f} % exigido.')
+
+          nucleo = {'Licitaciones.Domain': 0.0, 'Licitaciones.Application': 0.0}
+
+          for paquete in raiz.iter('package'):
+              nombre = paquete.get('name', '')
+              for clave in nucleo:
+                  if nombre.startswith(clave):
+                      nucleo[clave] = max(nucleo[clave], float(paquete.get('line-rate', 0)) * 100)
+
+          for clave, valor in nucleo.items():
+              print(f'Cobertura de {clave}: {valor:.2f} % (minimo {minimo_nucleo:.0f} %)')
+              if valor < minimo_nucleo:
+                  fallos.append(f'{clave} tiene {valor:.2f} %, por debajo del {minimo_nucleo:.0f} % exigido.')
+
+          if fallos:
+              print('\nLa cobertura no alcanza los umbrales exigidos:')
+              for fallo in fallos:
+                  print(f'  - {fallo}')
+              sys.exit(1)
+
+          print('\nTodos los umbrales de cobertura se cumplen.')
+          PYTHON
+
+      - name: Publicar los resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-unitarias
+          path: ./resultados
+          retention-days: 14
+
+  # -------------------------------------------------------------------------------------------
+  pruebas-integracion:
+    name: Pruebas de integracion con PostgreSQL real
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restaurar dependencias
+        run: dotnet restore Licitaciones.sln
+
+      - name: Ejecutar las pruebas de integracion
+        # Testcontainers levanta PostgreSQL 16 real dentro del ejecutor. El enunciado prohibe
+        # sustituirlo por SQLite tambien en las pruebas (seccion 11).
+        run: |
+          dotnet test tests/Licitaciones.IntegrationTests/Licitaciones.IntegrationTests.csproj \
+            --configuration Release \
+            --logger "trx;LogFileName=integracion.trx" \
+            --results-directory ./resultados-integracion
+
+      - name: Publicar los resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-integracion
+          path: ./resultados-integracion
+          retention-days: 14
+
+  # -------------------------------------------------------------------------------------------
+  imagen-docker:
+    name: Construccion de la imagen Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir la imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: licitaciones-xp:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Guardar la imagen para el trabajo de pruebas funcionales
+        run: docker save licitaciones-xp:ci --output imagen-licitaciones.tar
+
+      - name: Publicar la imagen como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: imagen-docker
+          path: imagen-licitaciones.tar
+          retention-days: 1
+
+  # -------------------------------------------------------------------------------------------
+  pruebas-funcionales:
+    name: Pruebas funcionales de extremo a extremo
+    runs-on: ubuntu-latest
+    needs: imagen-docker
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Descargar la imagen construida
+        uses: actions/download-artifact@v4
+        with:
+          name: imagen-docker
+
+      - name: Cargar la imagen en el demonio de Docker
+        run: docker load --input imagen-licitaciones.tar
+
+      - name: Levantar la solucion con Docker Compose
+        run: |
+          cp .env.example .env
+          sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=clave_de_integracion_continua/' .env
+          sed -i 's/Password=cambie_esta_clave/Password=clave_de_integracion_continua/' .env
+          docker compose up --detach --wait --wait-timeout 240
+
+      - name: Comprobar que la aplicacion responde
+        run: |
+          curl --fail --silent --show-error http://localhost:8080/health/vivo
+          curl --fail --silent --show-error http://localhost:8080/ > /dev/null
+
+      - name: Compilar las pruebas funcionales
+        run: |
+          dotnet build tests/Licitaciones.FunctionalTests/Licitaciones.FunctionalTests.csproj \
+            --configuration Release
+
+      - name: Instalar los navegadores de Playwright
+        run: |
+          pwsh tests/Licitaciones.FunctionalTests/bin/Release/net9.0/playwright.ps1 install --with-deps chromium
+
+      - name: Ejecutar las pruebas funcionales
+        env:
+          URL_BASE_PRUEBAS: http://localhost:8080
+        run: |
+          dotnet test tests/Licitaciones.FunctionalTests/Licitaciones.FunctionalTests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=funcionales.trx" \
+            --results-directory ./resultados-funcionales
+
+      - name: Recoger los registros de los contenedores si algo fallo
+        if: failure()
+        run: docker compose logs --no-color > registros-contenedores.txt
+
+      - name: Publicar los resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-funcionales
+          path: |
+            ./resultados-funcionales
+            registros-contenedores.txt
+          retention-days: 14
+
+      - name: Detener la solucion
+        if: always()
+        run: docker compose down --volumes
+
+  # -------------------------------------------------------------------------------------------
+  manifiestos-kubernetes:
+    name: Validacion de los manifiestos de Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar kubeconform
+        run: |
+          curl --location --silent --show-error \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz \
+            | tar --extract --gzip --directory /usr/local/bin kubeconform
+
+      - name: Validar los manifiestos contra el esquema de Kubernetes
+        # La plantilla de secretos se excluye a proposito: contiene marcadores de sustitucion,
+        # no valores reales.
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -kubernetes-version 1.29.0 \
+            -ignore-filename-pattern 'app-secret.example.yaml' \
+            k8s/
+
+      - name: Comprobar que no se versionen secretos reales
+        run: |
+          if [ -f k8s/app-secret.yaml ]; then
+            echo "El archivo k8s/app-secret.yaml no debe versionarse: contiene credenciales."
+            exit 1
+          fi
+          echo "No hay secretos reales versionados."
+
+  # -------------------------------------------------------------------------------------------
+  dependencias:
+    name: Revision de dependencias vulnerables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restaurar dependencias
+        run: dotnet restore Licitaciones.sln
+
+      - name: Buscar paquetes con vulnerabilidades conocidas
+        run: |
+          # dotnet list package devuelve codigo 0 aunque encuentre vulnerabilidades, por lo que
+          # se inspecciona la salida para decidir si el trabajo debe fallar.
+          dotnet list Licitaciones.sln package --vulnerable --include-transitive > vulnerables.txt 2>&1
+          cat vulnerables.txt
+
+          if grep --quiet "has the following vulnerable packages" vulnerables.txt; then
+            echo "Se encontraron dependencias con vulnerabilidades conocidas."
+            exit 1
+          fi
+
+          echo "No se encontraron dependencias vulnerables."
+
+      - name: Informar de paquetes obsoletos
+        # Informativo: no bloquea la integracion, pero deja constancia en el registro del flujo.
+        continue-on-error: true
+        run: dotnet list Licitaciones.sln package --outdated
+
+  # -------------------------------------------------------------------------------------------
+  resultado:
+    name: Resultado de la integracion continua
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - calidad
+      - pruebas-unitarias
+      - pruebas-integracion
+      - imagen-docker
+      - pruebas-funcionales
+      - manifiestos-kubernetes
+      - dependencias
+    steps:
+      - name: Bloquear la integracion si algun trabajo fallo
+        # Este trabajo es el que se marca como comprobacion obligatoria en la rama protegida.
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "La integracion continua no fue satisfactoria: hay trabajos fallidos."
+            exit 1
+          fi
+          echo "Todos los trabajos de la integracion continua terminaron correctamente."
