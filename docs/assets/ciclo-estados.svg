@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Ciclo de vida de una licitación (sección 8.1 del enunciado).
+
+  Las transiciones permitidas se dibujan con línea continua y las prohibidas con línea discontinua
+  en rojo. Se mantiene como SVG y no como Mermaid porque el diagrama distingue visualmente ambos
+  tipos de arista, que es justo lo que hace comprensible la regla de un vistazo.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" width="760" height="380"
+     font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+     role="img" aria-labelledby="titulo descripcion">
+  <title id="titulo">Ciclo de estados de una licitación</title>
+  <desc id="descripcion">
+    Desde Borrador se puede pasar a Publicada o a Cerrada. Desde Publicada solo se puede pasar a
+    Cerrada. Las transiciones de Publicada a Borrador y de Cerrada a cualquier otro estado están
+    prohibidas.
+  </desc>
+
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1d4e89"/>
+    </marker>
+    <marker id="flecha-prohibida" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b3261e"/>
+    </marker>
+  </defs>
+
+  <rect width="760" height="380" fill="#ffffff"/>
+
+  <!-- Estados -->
+  <g>
+    <rect x="40" y="140" width="170" height="70" rx="10" fill="#eef1f6" stroke="#5a6577" stroke-width="2"/>
+    <text x="125" y="172" text-anchor="middle" font-size="17" font-weight="600" fill="#1b2432">Borrador</text>
+    <text x="125" y="192" text-anchor="middle" font-size="12" fill="#5a6577">Admite edición completa</text>
+  </g>
+
+  <g>
+    <rect x="295" y="140" width="170" height="70" rx="10" fill="#e1f1f7" stroke="#0f6a8b" stroke-width="2"/>
+    <text x="380" y="172" text-anchor="middle" font-size="17" font-weight="600" fill="#0f6a8b">Publicada</text>
+    <text x="380" y="192" text-anchor="middle" font-size="12" fill="#5a6577">Acepta ofertas</text>
+  </g>
+
+  <g>
+    <rect x="550" y="140" width="170" height="70" rx="10" fill="#fbe6e4" stroke="#b3261e" stroke-width="2"/>
+    <text x="635" y="172" text-anchor="middle" font-size="17" font-weight="600" fill="#b3261e">Cerrada</text>
+    <text x="635" y="192" text-anchor="middle" font-size="12" fill="#5a6577">Estado final</text>
+  </g>
+
+  <!-- Transición permitida: Borrador -> Publicada -->
+  <line x1="212" y1="168" x2="291" y2="168" stroke="#1d4e89" stroke-width="2.5" marker-end="url(#flecha)"/>
+  <text x="251" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4e89">Publicar</text>
+  <text x="251" y="132" text-anchor="middle" font-size="11" fill="#5a6577">Datos completos,</text>
+  <text x="251" y="118" text-anchor="middle" font-size="11" fill="#5a6577">presupuesto válido,</text>
+  <text x="251" y="104" text-anchor="middle" font-size="11" fill="#5a6577">cierre futuro</text>
+
+  <!-- Transición permitida: Publicada -> Cerrada -->
+  <line x1="467" y1="168" x2="546" y2="168" stroke="#1d4e89" stroke-width="2.5" marker-end="url(#flecha)"/>
+  <text x="506" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4e89">Cerrar</text>
+  <text x="506" y="132" text-anchor="middle" font-size="11" fill="#5a6577">Por acción o al</text>
+  <text x="506" y="118" text-anchor="middle" font-size="11" fill="#5a6577">alcanzar la fecha</text>
+
+  <!-- Transición permitida: Borrador -> Cerrada (cancelación), por abajo -->
+  <path d="M 125 214 L 125 300 L 635 300 L 635 214"
+        fill="none" stroke="#1d4e89" stroke-width="2.5" marker-end="url(#flecha)"/>
+  <text x="380" y="320" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4e89">Cancelar</text>
+  <text x="380" y="337" text-anchor="middle" font-size="11" fill="#5a6577">Cancelación documentada desde Borrador</text>
+
+  <!-- Transición prohibida: Publicada -> Borrador -->
+  <path d="M 291 196 L 212 196"
+        fill="none" stroke="#b3261e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#flecha-prohibida)"/>
+  <text x="251" y="222" text-anchor="middle" font-size="12" font-weight="600" fill="#b3261e">Prohibida</text>
+
+  <!-- Transición prohibida: Cerrada -> Publicada -->
+  <path d="M 546 196 L 467 196"
+        fill="none" stroke="#b3261e" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#flecha-prohibida)"/>
+  <text x="506" y="222" text-anchor="middle" font-size="12" font-weight="600" fill="#b3261e">Prohibida</text>
+
+  <!-- Leyenda -->
+  <g>
+    <line x1="40" y1="50" x2="90" y2="50" stroke="#1d4e89" stroke-width="2.5"/>
+    <text x="100" y="55" font-size="12" fill="#1b2432">Transición permitida</text>
+
+    <line x1="260" y1="50" x2="310" y2="50" stroke="#b3261e" stroke-width="2.5" stroke-dasharray="7 5"/>
+    <text x="320" y="55" font-size="12" fill="#1b2432">Transición prohibida</text>
+
+    <text x="520" y="55" font-size="12" fill="#5a6577">
+      La reapertura requiere autorización expresa
+    </text>
+  </g>
+</svg>
