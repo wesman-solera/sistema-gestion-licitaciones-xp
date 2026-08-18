@@ -59,10 +59,10 @@ public sealed class OfertasController : ControladorBase
         {
             Pagina = pagina,
             Parametros = parametros,
-            FiltrosExtra = new Dictionary<string, string?>
+            FiltrosExtra = new Dictionary<string, string>
             {
-                ["licitacionId"] = licitacionId?.ToString(),
-                ["proveedorId"] = proveedorId?.ToString()
+                ["licitacionId"] = licitacionId?.ToString() ?? string.Empty,
+                ["proveedorId"] = proveedorId?.ToString() ?? string.Empty
             }
         });
     }

@@ -25,10 +25,10 @@ public sealed class PaginacionViewModel
     public required int Hasta { get; init; }
 
     /// <summary>Valores de ruta del enlace a la pagina anterior.</summary>
-    public required IDictionary<string, string?> RutaAnterior { get; init; }
+    public required IDictionary<string, string> RutaAnterior { get; init; }
 
     /// <summary>Valores de ruta del enlace a la pagina siguiente.</summary>
-    public required IDictionary<string, string?> RutaSiguiente { get; init; }
+    public required IDictionary<string, string> RutaSiguiente { get; init; }
 
     /// <summary>Indica si existe una pagina anterior.</summary>
     public bool TienePrevia => PaginaActual > 1;

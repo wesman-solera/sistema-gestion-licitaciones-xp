@@ -17,9 +17,10 @@
     <span asp-validation-for="LicitacionId" class="campo__error"></span>
     @if (Model.EsEdicion)
     {
-        @* Un control deshabilitado no viaja en el envio: se replica en un campo oculto para que
-           el enlace de modelo siga recibiendo el valor. *@
-        <input type="hidden" asp-for="LicitacionId" />
+        @* Un control deshabilitado no viaja en el envio, asi que el valor se replica en un campo
+           oculto. Se escribe el name a mano en lugar de usar asp-for para que el atributo id no
+           quede duplicado con el del desplegable. *@
+        <input type="hidden" name="LicitacionId" value="@Model.LicitacionId" />
         <span class="campo__ayuda">La licitacion de una oferta registrada no puede cambiarse.</span>
     }
     else
@@ -40,7 +41,7 @@
     <span asp-validation-for="ProveedorId" class="campo__error"></span>
     @if (Model.EsEdicion)
     {
-        <input type="hidden" asp-for="ProveedorId" />
+        <input type="hidden" name="ProveedorId" value="@Model.ProveedorId" />
         <span class="campo__ayuda">El proveedor de una oferta registrada no puede cambiarse.</span>
     }
     else

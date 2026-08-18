@@ -46,7 +46,7 @@ public sealed class LicitacionesController : ControladorBase
         {
             Pagina = pagina,
             Parametros = parametros,
-            FiltrosExtra = new Dictionary<string, string?> { ["estado"] = estado?.ToString() }
+            FiltrosExtra = new Dictionary<string, string> { ["estado"] = estado?.ToString() ?? string.Empty }
         };
 
         ViewData["EstadoFiltrado"] = estado;

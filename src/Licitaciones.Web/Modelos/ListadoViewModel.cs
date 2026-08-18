@@ -20,25 +20,30 @@ public sealed class ListadoViewModel<T>
     public required ParametrosConsultaApi Parametros { get; init; }
 
     /// <summary>Parametros adicionales propios del modulo que deben conservarse en los enlaces.</summary>
-    public IDictionary<string, string?> FiltrosExtra { get; init; } =
-        new Dictionary<string, string?>();
+    /// <remarks>
+    /// El tipo del valor no admite nulos porque el ayudante <c>asp-all-route-data</c> espera
+    /// <c>IDictionary&lt;string, string&gt;</c>. Un filtro sin valor se representa con la cadena
+    /// vacia, que el generador de enlaces omite igual que un nulo.
+    /// </remarks>
+    public IDictionary<string, string> FiltrosExtra { get; init; } =
+        new Dictionary<string, string>();
 
     /// <summary>Construye el diccionario de valores de ruta para un enlace del listado.</summary>
     /// <param name="pagina">Pagina destino, o <c>null</c> para conservar la actual.</param>
     /// <param name="ordenarPor">Campo de ordenamiento, o <c>null</c> para conservar el actual.</param>
     /// <param name="descendente">Direccion del orden, o <c>null</c> para conservar la actual.</param>
     /// <returns>Diccionario listo para pasarse al ayudante de enlaces.</returns>
-    public IDictionary<string, string?> ValoresRuta(
+    public IDictionary<string, string> ValoresRuta(
         int? pagina = null,
         string? ordenarPor = null,
         bool? descendente = null)
     {
-        var valores = new Dictionary<string, string?>
+        var valores = new Dictionary<string, string>
         {
             ["pagina"] = (pagina ?? Parametros.Pagina).ToString(),
             ["tamanoPagina"] = Parametros.TamanoPagina.ToString(),
-            ["buscar"] = Parametros.Buscar,
-            ["ordenarPor"] = ordenarPor ?? Parametros.OrdenarPor,
+            ["buscar"] = Parametros.Buscar ?? string.Empty,
+            ["ordenarPor"] = ordenarPor ?? Parametros.OrdenarPor ?? string.Empty,
             ["descendente"] = (descendente ?? Parametros.Descendente).ToString().ToLowerInvariant(),
             ["incluirEliminados"] = Parametros.IncluirEliminados.ToString().ToLowerInvariant()
         };
