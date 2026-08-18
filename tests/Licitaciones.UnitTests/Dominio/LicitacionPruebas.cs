@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.Domain.Enums;
@@ -15,7 +14,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void Crear_ConDatosValidos_NaceEnBorrador()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj);
 
         licitacion.Estado.Should().Be(EstadoLicitacion.Borrador);
         licitacion.Id.Should().NotBe(Guid.Empty);
@@ -29,7 +28,7 @@ public sealed class LicitacionPruebas
     [InlineData(-500_000)]
     public void Crear_ConPresupuestoNoPositivo_Falla(decimal presupuesto)
     {
-        Action accion = () => Constructores.Licitacion(_reloj, presupuestoCrc: presupuesto);
+        Action accion = () => Constructores.CrearLicitacion(_reloj, presupuestoCrc: presupuesto);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -39,7 +38,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void Crear_ConFechaDeCierrePasada_Falla()
     {
-        Action accion = () => Constructores.Licitacion(_reloj, horasHastaCierre: -1);
+        Action accion = () => Constructores.CrearLicitacion(_reloj, horasHastaCierre: -1);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -51,7 +50,7 @@ public sealed class LicitacionPruebas
     [InlineData("   ")]
     public void Crear_SinCodigo_Falla(string codigo)
     {
-        Action accion = () => Constructores.Licitacion(_reloj, codigo: codigo);
+        Action accion = () => Constructores.CrearLicitacion(_reloj, codigo: codigo);
 
         accion.Should().Throw<ReglaNegocioVioladaException>();
     }
@@ -66,7 +65,7 @@ public sealed class LicitacionPruebas
     [InlineData("Lic-2026-001", "LIC-2026-001")]
     public void Crear_NormalizaElCodigo(string entrada, string normalizadoEsperado)
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj, codigo: entrada);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj, codigo: entrada);
 
         licitacion.CodigoNormalizado.Should().Be(normalizadoEsperado);
         licitacion.Codigo.Should().Be(entrada.Trim());
@@ -75,7 +74,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void Publicar_DesdeBorradorConDatosValidos_CambiaAPublicada()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj);
 
         licitacion.Publicar(_reloj.AhoraUtc);
 
@@ -86,7 +85,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void Publicar_ConFechaDeCierreYaVencida_Falla()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj, horasHastaCierre: 2);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj, horasHastaCierre: 2);
 
         _reloj.Avanzar(TimeSpan.FromHours(3));
 
@@ -100,7 +99,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void Publicar_UnaLicitacionYaPublicada_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         Action accion = () => licitacion.Publicar(_reloj.AhoraUtc);
 
@@ -110,7 +109,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void Cerrar_DesdeBorrador_EsUnaCancelacionPermitida()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj);
 
         licitacion.Cerrar(_reloj.AhoraUtc);
 
@@ -120,7 +119,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void CambiarEstado_HaciaBorrador_SiempreFalla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         Action accion = () => licitacion.CambiarEstado(EstadoLicitacion.Borrador, _reloj.AhoraUtc);
 
@@ -134,7 +133,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void EstaCerradaFuncionalmente_TrasElVencimiento_EsVerdaderoAunqueElEstadoDigaPublicada()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, horasHastaCierre: 1);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, horasHastaCierre: 1);
 
         licitacion.EstaCerradaFuncionalmente(_reloj.AhoraUtc).Should().BeFalse();
 
@@ -152,7 +151,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void EstaCerradaFuncionalmente_EnElInstanteExactoDelCierre_EsVerdadero()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, horasHastaCierre: 5);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, horasHastaCierre: 5);
 
         licitacion.EstaCerradaFuncionalmente(licitacion.FechaCierre).Should().BeTrue();
     }
@@ -160,7 +159,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void ActualizarDatos_ReduciendoElPresupuestoBajoUnaOfertaExistente_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
 
         Action accion = () => licitacion.ActualizarDatos(
             licitacion.Titulo,
@@ -177,7 +176,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void ActualizarDatos_ReduciendoElPresupuestoHastaLaOfertaMasAlta_EsValido()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
 
         licitacion.ActualizarDatos(
             licitacion.Titulo,
@@ -192,7 +191,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void ActualizarDatos_SobreUnaLicitacionCerrada_Falla()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj);
         licitacion.Cerrar(_reloj.AhoraUtc);
 
         Action accion = () => licitacion.ActualizarDatos(
@@ -208,7 +207,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void CambiarCodigo_EnEstadoPublicada_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         Action accion = () => licitacion.CambiarCodigo("LIC-2026-999", _reloj.AhoraUtc);
 
@@ -218,7 +217,7 @@ public sealed class LicitacionPruebas
     [Fact]
     public void EliminarLogicamente_MarcaLaFechaYEsIdempotente()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj);
 
         licitacion.EliminarLogicamente(_reloj.AhoraUtc);
         DateTimeOffset? primeraMarca = licitacion.DeletedAt;

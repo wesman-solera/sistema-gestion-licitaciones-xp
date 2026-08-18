@@ -21,7 +21,7 @@ public static class Constructores
     /// <param name="presupuestoCrc">Presupuesto estimado.</param>
     /// <param name="horasHastaCierre">Horas que faltan para el cierre desde el instante del reloj.</param>
     /// <returns>Una licitacion valida en Borrador.</returns>
-    public static Licitacion Licitacion(
+    public static Licitacion CrearLicitacion(
         RelojFijo reloj,
         string codigo = "LIC-2026-001",
         decimal presupuestoCrc = PresupuestoPorDefecto,
@@ -29,7 +29,7 @@ public static class Constructores
     {
         ArgumentNullException.ThrowIfNull(reloj);
 
-        return Domain.Entidades.Licitacion.Crear(
+        return Licitacion.Crear(
             codigo,
             "Compra de equipo de computo",
             presupuestoCrc,
@@ -43,7 +43,7 @@ public static class Constructores
     /// <param name="presupuestoCrc">Presupuesto estimado.</param>
     /// <param name="horasHastaCierre">Horas que faltan para el cierre desde el instante del reloj.</param>
     /// <returns>Una licitacion valida en estado Publicada.</returns>
-    public static Licitacion LicitacionPublicada(
+    public static Licitacion CrearLicitacionPublicada(
         RelojFijo reloj,
         string codigo = "LIC-2026-001",
         decimal presupuestoCrc = PresupuestoPorDefecto,
@@ -59,11 +59,11 @@ public static class Constructores
     /// <param name="reloj">Reloj de la prueba.</param>
     /// <param name="nombre">Nombre del proveedor.</param>
     /// <returns>Un proveedor valido.</returns>
-    public static Proveedor Proveedor(RelojFijo reloj, string nombre = "Empresa Central")
+    public static Proveedor CrearProveedor(RelojFijo reloj, string nombre = "Empresa Central")
     {
         ArgumentNullException.ThrowIfNull(reloj);
 
-        return Domain.Entidades.Proveedor.Crear(nombre, reloj.AhoraUtc);
+        return Proveedor.Crear(nombre, reloj.AhoraUtc);
     }
 
     /// <summary>Registra una oferta valida para la licitacion indicada.</summary>
@@ -72,7 +72,7 @@ public static class Constructores
     /// <param name="montoCrc">Monto ofertado.</param>
     /// <param name="proveedorId">Proveedor oferente. Si se omite se genera uno nuevo.</param>
     /// <returns>Una oferta valida.</returns>
-    public static Oferta Oferta(
+    public static Oferta CrearOferta(
         Licitacion licitacion,
         RelojFijo reloj,
         decimal montoCrc,
@@ -80,7 +80,7 @@ public static class Constructores
     {
         ArgumentNullException.ThrowIfNull(reloj);
 
-        return Domain.Entidades.Oferta.Registrar(
+        return Oferta.Registrar(
             licitacion,
             proveedorId ?? Guid.NewGuid(),
             montoCrc,
@@ -90,7 +90,7 @@ public static class Constructores
     /// <summary>Crea la tabla de niveles de aprobacion del enunciado.</summary>
     /// <param name="reloj">Reloj de la prueba.</param>
     /// <returns>Los tres rangos de la seccion 8.7.</returns>
-    public static IReadOnlyList<NivelAprobacion> NivelesDelEnunciado(RelojFijo reloj)
+    public static IReadOnlyList<NivelAprobacion> CrearNivelesDelEnunciado(RelojFijo reloj)
     {
         ArgumentNullException.ThrowIfNull(reloj);
 

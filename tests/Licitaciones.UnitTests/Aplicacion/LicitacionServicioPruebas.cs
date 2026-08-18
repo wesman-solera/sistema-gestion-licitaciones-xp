@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Application.Abstracciones;
 using Licitaciones.Application.Dtos;
 using Licitaciones.Application.Excepciones;
@@ -46,8 +45,8 @@ public sealed class LicitacionServicioPruebas
         _licitaciones.ExisteCodigoAsync("LIC-2026-001", null, Arg.Any<CancellationToken>())
             .Returns(false);
         _ofertas.ListarPorLicitacionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns([]);
+            .Returns(Array.Empty<Oferta>());
+        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<NivelAprobacion>());
 
         LicitacionServicio servicio = CrearServicio();
 
@@ -113,15 +112,15 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task ActualizarAsync_ConsultaLaOfertaMasAltaAntesDeCambiarElPresupuesto()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
         _ofertas.ObtenerMayorMontoAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(900_000m);
         _ofertas.ListarPorLicitacionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns([]);
+            .Returns(Array.Empty<Oferta>());
+        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<NivelAprobacion>());
 
         LicitacionServicio servicio = CrearServicio();
 
@@ -140,7 +139,7 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task CambiarEstadoAsync_DePublicadaABorrador_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
@@ -161,19 +160,19 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task ObtenerMejorOfertaAsync_DevuelveElAprobadorDeLaTablaParametrizable()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(
             _reloj,
             presupuestoCrc: 20_000_000m);
 
-        Oferta ganadora = Constructores.Oferta(licitacion, _reloj, 12_000_000m);
-        Oferta perdedora = Constructores.Oferta(licitacion, _reloj, 15_000_000m);
+        Oferta ganadora = Constructores.CrearOferta(licitacion, _reloj, 12_000_000m);
+        Oferta perdedora = Constructores.CrearOferta(licitacion, _reloj, 15_000_000m);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
         _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
-            .Returns([ganadora, perdedora]);
+            .Returns(new[] { ganadora, perdedora });
         _niveles.ListarTodosAsync(Arg.Any<CancellationToken>())
-            .Returns([.. Constructores.NivelesDelEnunciado(_reloj)]);
+            .Returns(Constructores.CrearNivelesDelEnunciado(_reloj));
 
         LicitacionServicio servicio = CrearServicio();
 
@@ -193,14 +192,14 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task ObtenerMejorOfertaAsync_SinRangoAplicable_DevuelveAprobadorNulo()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
         _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
-            .Returns([oferta]);
-        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns([]);
+            .Returns(new[] { oferta });
+        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<NivelAprobacion>());
 
         LicitacionServicio servicio = CrearServicio();
 
@@ -218,12 +217,13 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task ObtenerDetalleAsync_SinTipoDeCambioActivo_DevuelveMontoEnColonesSinDolares()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
-        _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>()).Returns([]);
-        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns([]);
+        _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<Oferta>());
+        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<NivelAprobacion>());
         _tiposCambio.ObtenerActivoAsync(Arg.Any<CancellationToken>()).Returns((TipoCambio?)null);
 
         LicitacionServicio servicio = CrearServicio();
@@ -238,13 +238,14 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task ObtenerDetalleAsync_ConTipoDeCambioActivo_IncluyeElEquivalenteYSuFecha()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: 1_010_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: 1_010_000m);
         TipoCambio tipoCambio = TipoCambio.Crear(505m, _reloj.AhoraUtc, true, _reloj.AhoraUtc);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
-        _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>()).Returns([]);
-        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns([]);
+        _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<Oferta>());
+        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<NivelAprobacion>());
         _tiposCambio.ObtenerActivoAsync(Arg.Any<CancellationToken>()).Returns(tipoCambio);
 
         LicitacionServicio servicio = CrearServicio();
@@ -262,15 +263,15 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task ObtenerDetalleAsync_ConsultaElTipoDeCambioUnaSolaVez()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
-        Oferta primera = Constructores.Oferta(licitacion, _reloj, 500_000m);
-        Oferta segunda = Constructores.Oferta(licitacion, _reloj, 600_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
+        Oferta primera = Constructores.CrearOferta(licitacion, _reloj, 500_000m);
+        Oferta segunda = Constructores.CrearOferta(licitacion, _reloj, 600_000m);
 
         _licitaciones.ObtenerConOfertasAsync(licitacion.Id, Arg.Any<CancellationToken>())
             .Returns(licitacion);
         _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
-            .Returns([primera, segunda]);
-        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns([]);
+            .Returns(new[] { primera, segunda });
+        _niveles.ListarTodosAsync(Arg.Any<CancellationToken>()).Returns(Array.Empty<NivelAprobacion>());
         _tiposCambio.ObtenerActivoAsync(Arg.Any<CancellationToken>())
             .Returns(TipoCambio.Crear(505m, _reloj.AhoraUtc, true, _reloj.AhoraUtc));
 
@@ -284,7 +285,7 @@ public sealed class LicitacionServicioPruebas
     [Fact]
     public async Task EliminarAsync_ConOfertasAsociadas_AplicaBorradoLogico()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         _licitaciones.ObtenerPorIdAsync(licitacion.Id, false, Arg.Any<CancellationToken>())
             .Returns(licitacion);

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.Domain.Excepciones;
@@ -22,7 +21,7 @@ public sealed class ProveedorPruebas
     [InlineData("  EmPrEsA   CeNtRaL  ")]
     public void Crear_NormalizaLosNombresEquivalentesAlMismoValor(string nombre)
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj, nombre);
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj, nombre);
 
         proveedor.NombreNormalizado.Should().Be("EMPRESA CENTRAL");
     }
@@ -30,7 +29,7 @@ public sealed class ProveedorPruebas
     [Fact]
     public void Crear_ConservaElNombreVisibleLimpioDeEspaciosSobrantes()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj, "  Distribuidora   del   Norte  ");
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj, "  Distribuidora   del   Norte  ");
 
         proveedor.Nombre.Should().Be("Distribuidora del Norte");
     }
@@ -42,7 +41,7 @@ public sealed class ProveedorPruebas
     [InlineData("Proveedor 123")]
     public void Crear_AdmiteLosCaracteresPermitidos(string nombre)
     {
-        Action accion = () => Constructores.Proveedor(_reloj, nombre);
+        Action accion = () => Constructores.CrearProveedor(_reloj, nombre);
 
         accion.Should().NotThrow();
     }
@@ -55,7 +54,7 @@ public sealed class ProveedorPruebas
     [InlineData("Empresa/Sucursal")]
     public void Crear_RechazaLosCaracteresNoPermitidos(string nombre)
     {
-        Action accion = () => Constructores.Proveedor(_reloj, nombre);
+        Action accion = () => Constructores.CrearProveedor(_reloj, nombre);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -67,7 +66,7 @@ public sealed class ProveedorPruebas
     [InlineData("   ")]
     public void Crear_SinNombre_Falla(string nombre)
     {
-        Action accion = () => Constructores.Proveedor(_reloj, nombre);
+        Action accion = () => Constructores.CrearProveedor(_reloj, nombre);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -77,7 +76,7 @@ public sealed class ProveedorPruebas
     [Fact]
     public void CambiarNombre_ActualizaTambienLaFormaNormalizada()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj, "Empresa Central");
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj, "Empresa Central");
 
         _reloj.Avanzar(TimeSpan.FromHours(1));
         proveedor.CambiarNombre("  distribuidora  sur  ", _reloj.AhoraUtc);
@@ -90,7 +89,7 @@ public sealed class ProveedorPruebas
     [Fact]
     public void CambiarNombre_SobreUnProveedorEliminado_Falla()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj);
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj);
         proveedor.EliminarLogicamente(_reloj.AhoraUtc);
 
         Action accion = () => proveedor.CambiarNombre("Otro nombre", _reloj.AhoraUtc);
@@ -101,7 +100,7 @@ public sealed class ProveedorPruebas
     [Fact]
     public void Restaurar_ReactivaUnProveedorEliminado()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj);
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj);
         proveedor.EliminarLogicamente(_reloj.AhoraUtc);
 
         proveedor.Restaurar(_reloj.AhoraUtc);

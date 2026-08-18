@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.Domain.Excepciones;
@@ -14,9 +13,9 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_EnLicitacionPublicadaYVigente_CreaLaOferta()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 750_000m);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 750_000m);
 
         oferta.MontoOfertadoCrc.Should().Be(750_000m);
         oferta.LicitacionId.Should().Be(licitacion.Id);
@@ -29,9 +28,9 @@ public sealed class OfertaPruebas
     [InlineData(-100_000)]
     public void Registrar_ConMontoNoPositivo_Falla(decimal monto)
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
-        Action accion = () => Constructores.Oferta(licitacion, _reloj, monto);
+        Action accion = () => Constructores.CrearOferta(licitacion, _reloj, monto);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -41,9 +40,9 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_ConMontoSuperiorAlPresupuesto_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
 
-        Action accion = () => Constructores.Oferta(licitacion, _reloj, 1_000_000.01m);
+        Action accion = () => Constructores.CrearOferta(licitacion, _reloj, 1_000_000.01m);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -57,9 +56,9 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_ConMontoIgualAlPresupuesto_EsValida()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
 
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 1_000_000m);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 1_000_000m);
 
         oferta.MontoOfertadoCrc.Should().Be(1_000_000m);
     }
@@ -67,9 +66,9 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_EnLicitacionEnBorrador_Falla()
     {
-        Licitacion licitacion = Constructores.Licitacion(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacion(_reloj);
 
-        Action accion = () => Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Action accion = () => Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -79,10 +78,10 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_EnLicitacionCerrada_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
         licitacion.Cerrar(_reloj.AhoraUtc);
 
-        Action accion = () => Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Action accion = () => Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -92,11 +91,11 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_DespuesDeLaFechaDeCierre_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, horasHastaCierre: 2);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, horasHastaCierre: 2);
 
         _reloj.Avanzar(TimeSpan.FromHours(3));
 
-        Action accion = () => Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Action accion = () => Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -110,11 +109,11 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_EnElInstanteExactoDelCierre_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, horasHastaCierre: 4);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, horasHastaCierre: 4);
 
         _reloj.AhoraUtc = licitacion.FechaCierre;
 
-        Action accion = () => Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Action accion = () => Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         accion.Should()
             .Throw<ReglaNegocioVioladaException>()
@@ -128,11 +127,11 @@ public sealed class OfertaPruebas
     [Fact]
     public void Registrar_UnSegundoAntesDelCierre_EsValida()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, horasHastaCierre: 4);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, horasHastaCierre: 4);
 
         _reloj.AhoraUtc = licitacion.FechaCierre.AddSeconds(-1);
 
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         oferta.Should().NotBeNull();
     }
@@ -140,8 +139,8 @@ public sealed class OfertaPruebas
     [Fact]
     public void CambiarMonto_EnLicitacionVigente_ActualizaElValor()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 800_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 800_000m);
 
         _reloj.Avanzar(TimeSpan.FromMinutes(10));
         oferta.CambiarMonto(licitacion, 700_000m, _reloj.AhoraUtc);
@@ -153,8 +152,8 @@ public sealed class OfertaPruebas
     [Fact]
     public void CambiarMonto_SuperandoElPresupuesto_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 800_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: 1_000_000m);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 800_000m);
 
         Action accion = () => oferta.CambiarMonto(licitacion, 1_500_000m, _reloj.AhoraUtc);
 
@@ -169,8 +168,8 @@ public sealed class OfertaPruebas
     [Fact]
     public void CambiarMonto_TrasElVencimientoDeLaLicitacion_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, horasHastaCierre: 2);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 800_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, horasHastaCierre: 2);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 800_000m);
 
         _reloj.Avanzar(TimeSpan.FromHours(3));
 
@@ -184,8 +183,8 @@ public sealed class OfertaPruebas
     [Fact]
     public void AsegurarMutable_ConLicitacionCerrada_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         licitacion.Cerrar(_reloj.AhoraUtc);
 

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.Domain.Excepciones;

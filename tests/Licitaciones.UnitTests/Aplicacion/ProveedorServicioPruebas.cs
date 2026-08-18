@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Application.Abstracciones;
 using Licitaciones.Application.Dtos;
 using Licitaciones.Application.Excepciones;
@@ -110,7 +109,7 @@ public sealed class ProveedorServicioPruebas
     [Fact]
     public async Task EliminarAsync_ConOfertasAsociadas_AplicaBorradoLogico()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj);
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj);
 
         _proveedores.ObtenerPorIdAsync(proveedor.Id, false, Arg.Any<CancellationToken>())
             .Returns(proveedor);
@@ -129,7 +128,7 @@ public sealed class ProveedorServicioPruebas
     [Fact]
     public async Task EliminarAsync_SinOfertasAsociadas_AplicaBorradoFisico()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj);
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj);
 
         _proveedores.ObtenerPorIdAsync(proveedor.Id, false, Arg.Any<CancellationToken>())
             .Returns(proveedor);
@@ -148,7 +147,7 @@ public sealed class ProveedorServicioPruebas
     [Fact]
     public async Task ActualizarAsync_ExcluyeAlPropioProveedorDeLaComprobacionDeUnicidad()
     {
-        Proveedor proveedor = Constructores.Proveedor(_reloj, "Empresa Central");
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj, "Empresa Central");
 
         _proveedores.ObtenerPorIdAsync(proveedor.Id, false, Arg.Any<CancellationToken>())
             .Returns(proveedor);

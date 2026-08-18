@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.Domain.Enums;
 using Licitaciones.Domain.ObjetosValor;
@@ -29,11 +28,11 @@ public sealed class EvaluadorOfertasPruebas
     [Fact]
     public void Evaluar_ConVariasOfertas_EligeLaDeMenorMonto()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
-        Oferta cara = Constructores.Oferta(licitacion, _reloj, 950_000m);
-        Oferta barata = Constructores.Oferta(licitacion, _reloj, 700_000m);
-        Oferta intermedia = Constructores.Oferta(licitacion, _reloj, 800_000m);
+        Oferta cara = Constructores.CrearOferta(licitacion, _reloj, 950_000m);
+        Oferta barata = Constructores.CrearOferta(licitacion, _reloj, 700_000m);
+        Oferta intermedia = Constructores.CrearOferta(licitacion, _reloj, 800_000m);
 
         ResultadoEvaluacionOfertas resultado =
             EvaluadorOfertas.Evaluar([cara, barata, intermedia], licitacion.PresupuestoEstimadoCrc);
@@ -48,12 +47,12 @@ public sealed class EvaluadorOfertasPruebas
     [Fact]
     public void Evaluar_ConEmpateDeMonto_EligeLaRegistradaPrimero()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
-        Oferta primera = Constructores.Oferta(licitacion, _reloj, 800_000m);
+        Oferta primera = Constructores.CrearOferta(licitacion, _reloj, 800_000m);
 
         _reloj.Avanzar(TimeSpan.FromMinutes(30));
-        Oferta segunda = Constructores.Oferta(licitacion, _reloj, 800_000m);
+        Oferta segunda = Constructores.CrearOferta(licitacion, _reloj, 800_000m);
 
         // Se pasan en orden inverso para comprobar que el desempate no depende del orden de
         // la coleccion recibida, sino de la fecha de registro.
@@ -81,8 +80,8 @@ public sealed class EvaluadorOfertasPruebas
         decimal ahorroEsperado,
         ClasificacionAhorro clasificacionEsperada)
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj, presupuestoCrc: presupuesto);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, montoOferta);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj, presupuestoCrc: presupuesto);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, montoOferta);
 
         ResultadoEvaluacionOfertas resultado = EvaluadorOfertas.Evaluar([oferta], presupuesto);
 
@@ -93,18 +92,18 @@ public sealed class EvaluadorOfertasPruebas
     [Fact]
     public void Evaluar_EtiquetasCoincidenConElTextoDelEnunciado()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         EvaluadorOfertas
-            .Evaluar([Constructores.Oferta(licitacion, _reloj, 500_000m)], 1_000_000m)
+            .Evaluar([Constructores.CrearOferta(licitacion, _reloj, 500_000m)], 1_000_000m)
             .EtiquetaClasificacion.Should().Be("Oferta conveniente");
 
         EvaluadorOfertas
-            .Evaluar([Constructores.Oferta(licitacion, _reloj, 990_000m)], 1_000_000m)
+            .Evaluar([Constructores.CrearOferta(licitacion, _reloj, 990_000m)], 1_000_000m)
             .EtiquetaClasificacion.Should().Be("Oferta aceptable");
 
         EvaluadorOfertas
-            .Evaluar([Constructores.Oferta(licitacion, _reloj, 1_000_000m)], 1_000_000m)
+            .Evaluar([Constructores.CrearOferta(licitacion, _reloj, 1_000_000m)], 1_000_000m)
             .EtiquetaClasificacion.Should().Be("Oferta valida sin ahorro");
     }
 

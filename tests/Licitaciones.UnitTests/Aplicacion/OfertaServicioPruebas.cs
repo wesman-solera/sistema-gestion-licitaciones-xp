@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Application.Abstracciones;
 using Licitaciones.Application.Dtos;
 using Licitaciones.Application.Servicios;
@@ -35,12 +34,12 @@ public sealed class OfertaServicioPruebas
         decimal presupuesto = 1_000_000m,
         int horasHastaCierre = 48)
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(
             _reloj,
             presupuestoCrc: presupuesto,
             horasHastaCierre: horasHastaCierre);
 
-        Proveedor proveedor = Constructores.Proveedor(_reloj);
+        Proveedor proveedor = Constructores.CrearProveedor(_reloj);
 
         _licitaciones.ObtenerPorIdAsync(licitacion.Id, false, Arg.Any<CancellationToken>())
             .Returns(licitacion);
@@ -49,7 +48,7 @@ public sealed class OfertaServicioPruebas
         _proveedores.ObtenerPorIdAsync(proveedor.Id, false, Arg.Any<CancellationToken>())
             .Returns(proveedor);
         _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
-            .Returns([]);
+            .Returns(Array.Empty<Oferta>());
 
         return (licitacion, proveedor);
     }
@@ -152,7 +151,7 @@ public sealed class OfertaServicioPruebas
     [Fact]
     public async Task RegistrarAsync_ConProveedorInexistente_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
         _licitaciones.ObtenerPorIdAsync(licitacion.Id, false, Arg.Any<CancellationToken>())
             .Returns(licitacion);
@@ -173,8 +172,8 @@ public sealed class OfertaServicioPruebas
     [Fact]
     public async Task EliminarAsync_ConLicitacionCerrada_Falla()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 500_000m);
         licitacion.Cerrar(_reloj.AhoraUtc);
 
         _ofertas.ObtenerPorIdAsync(oferta.Id, Arg.Any<CancellationToken>()).Returns(oferta);
@@ -194,8 +193,8 @@ public sealed class OfertaServicioPruebas
     [Fact]
     public async Task EliminarAsync_ConLicitacionVigente_EliminaLaOferta()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
-        Oferta oferta = Constructores.Oferta(licitacion, _reloj, 500_000m);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
+        Oferta oferta = Constructores.CrearOferta(licitacion, _reloj, 500_000m);
 
         _ofertas.ObtenerPorIdAsync(oferta.Id, Arg.Any<CancellationToken>()).Returns(oferta);
         _licitaciones.ObtenerPorIdAsync(licitacion.Id, true, Arg.Any<CancellationToken>())
@@ -216,13 +215,13 @@ public sealed class OfertaServicioPruebas
     [Fact]
     public async Task ListarPorLicitacionAsync_MarcaLaMejorOferta()
     {
-        Licitacion licitacion = Constructores.LicitacionPublicada(_reloj);
+        Licitacion licitacion = Constructores.CrearLicitacionPublicada(_reloj);
 
-        Oferta cara = Constructores.Oferta(licitacion, _reloj, 900_000m);
-        Oferta barata = Constructores.Oferta(licitacion, _reloj, 600_000m);
+        Oferta cara = Constructores.CrearOferta(licitacion, _reloj, 900_000m);
+        Oferta barata = Constructores.CrearOferta(licitacion, _reloj, 600_000m);
 
         _ofertas.ListarPorLicitacionAsync(licitacion.Id, Arg.Any<CancellationToken>())
-            .Returns([cara, barata]);
+            .Returns(new[] { cara, barata });
 
         OfertaServicio servicio = CrearServicio();
 

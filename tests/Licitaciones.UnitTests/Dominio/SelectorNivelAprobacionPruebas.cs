@@ -1,4 +1,3 @@
-using FluentAssertions;
 using Licitaciones.Domain.Constantes;
 using Licitaciones.Domain.Entidades;
 using Licitaciones.Domain.Excepciones;
@@ -30,7 +29,7 @@ public sealed class SelectorNivelAprobacionPruebas
         decimal monto,
         string aprobadorEsperado)
     {
-        var niveles = Constructores.NivelesDelEnunciado(_reloj);
+        var niveles = Constructores.CrearNivelesDelEnunciado(_reloj);
 
         NivelAprobacion? nivel = SelectorNivelAprobacion.Seleccionar(monto, niveles);
 
@@ -51,7 +50,7 @@ public sealed class SelectorNivelAprobacionPruebas
     [Fact]
     public void Seleccionar_ConMontoPorDebajoDelPrimerRango_DevuelveNulo()
     {
-        var niveles = Constructores.NivelesDelEnunciado(_reloj);
+        var niveles = Constructores.CrearNivelesDelEnunciado(_reloj);
 
         SelectorNivelAprobacion.Seleccionar(0.005m, niveles).Should().BeNull();
     }
@@ -59,7 +58,7 @@ public sealed class SelectorNivelAprobacionPruebas
     [Fact]
     public void SeleccionarObligatorio_SinRangoAplicable_Falla()
     {
-        var niveles = Constructores.NivelesDelEnunciado(_reloj);
+        var niveles = Constructores.CrearNivelesDelEnunciado(_reloj);
 
         Action accion = () => SelectorNivelAprobacion.SeleccionarObligatorio(0.001m, niveles);
 
@@ -74,7 +73,7 @@ public sealed class SelectorNivelAprobacionPruebas
     [Fact]
     public void Seleccionar_NoDependeDelOrdenDeLaColeccion()
     {
-        var niveles = Constructores.NivelesDelEnunciado(_reloj).Reverse().ToList();
+        var niveles = Constructores.CrearNivelesDelEnunciado(_reloj).Reverse().ToList();
 
         SelectorNivelAprobacion.Seleccionar(500_000m, niveles)!
             .Aprobador.Should().Be("Encargado de area");
@@ -83,7 +82,7 @@ public sealed class SelectorNivelAprobacionPruebas
     [Fact]
     public void AsegurarConjuntoValido_ConLosRangosDelEnunciado_NoLanza()
     {
-        var niveles = Constructores.NivelesDelEnunciado(_reloj);
+        var niveles = Constructores.CrearNivelesDelEnunciado(_reloj);
 
         Action accion = () => SelectorNivelAprobacion.AsegurarConjuntoValido([.. niveles]);
 
