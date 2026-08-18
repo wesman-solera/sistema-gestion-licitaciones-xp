@@ -1,0 +1,308 @@
+###############################################################################
+# Colección reproducible de solicitudes de la API.
+#
+# Recorre el flujo funcional mínimo de la sección 5.3 del enunciado. Se ejecuta
+# de arriba abajo: cada petición usa los identificadores que devolvió la anterior.
+#
+# Requiere la aplicación levantada:
+#     docker compose up --build
+###############################################################################
+
+@host = http://localhost:8080
+@contentType = application/json
+
+###############################################################################
+# 1. Estado del sistema
+###############################################################################
+
+### Comprobar que la aplicación responde
+GET {{host}}/health/vivo
+
+### Comprobar que la base de datos responde
+GET {{host}}/health/listo
+
+### Consultar el tipo de cambio activo cargado por la semilla
+GET {{host}}/api/v1/tipos-cambio/activo
+
+### Consultar los niveles de aprobación parametrizados
+GET {{host}}/api/v1/niveles-aprobacion
+
+###############################################################################
+# 2. Proveedores
+###############################################################################
+
+### Registrar el primer proveedor
+# @name crearProveedorAlfa
+POST {{host}}/api/v1/proveedores
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Consorcio Alfa S.A."
+}
+
+@proveedorAlfa = {{crearProveedorAlfa.response.body.id}}
+
+### Registrar el segundo proveedor
+# @name crearProveedorBeta
+POST {{host}}/api/v1/proveedores
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Distribuidora Beta (Region Norte)"
+}
+
+@proveedorBeta = {{crearProveedorBeta.response.body.id}}
+
+### Intentar un nombre equivalente — debe devolver 409 con código PRO-001
+POST {{host}}/api/v1/proveedores
+Content-Type: {{contentType}}
+
+{
+  "nombre": "   consorcio   alfa   s.a.   "
+}
+
+### Intentar un nombre con caracteres no permitidos — debe devolver 400
+POST {{host}}/api/v1/proveedores
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Empresa @ Central"
+}
+
+### Listar proveedores con paginación
+GET {{host}}/api/v1/proveedores?pagina=1&tamanoPagina=20&ordenarPor=nombre
+
+###############################################################################
+# 3. Licitaciones
+###############################################################################
+
+### Crear una licitación — nace en Borrador
+# @name crearLicitacion
+POST {{host}}/api/v1/licitaciones
+Content-Type: {{contentType}}
+
+{
+  "codigo": "LIC-2026-001",
+  "titulo": "Compra de equipo de computo para laboratorios",
+  "presupuestoEstimadoCrc": 12000000.00,
+  "fechaCierre": "2026-12-31T23:00:00Z"
+}
+
+@licitacionId = {{crearLicitacion.response.body.id}}
+
+### Intentar un código equivalente — debe devolver 409 con código LIC-001
+POST {{host}}/api/v1/licitaciones
+Content-Type: {{contentType}}
+
+{
+  "codigo": "  lic-2026-001  ",
+  "titulo": "Otra licitacion",
+  "presupuestoEstimadoCrc": 5000000.00,
+  "fechaCierre": "2026-12-31T23:00:00Z"
+}
+
+### Intentar un presupuesto cero — debe devolver 400
+POST {{host}}/api/v1/licitaciones
+Content-Type: {{contentType}}
+
+{
+  "codigo": "LIC-2026-002",
+  "titulo": "Licitacion invalida",
+  "presupuestoEstimadoCrc": 0,
+  "fechaCierre": "2026-12-31T23:00:00Z"
+}
+
+### Intentar una fecha de cierre pasada — debe devolver 422 con código LIC-003
+POST {{host}}/api/v1/licitaciones
+Content-Type: {{contentType}}
+
+{
+  "codigo": "LIC-2026-003",
+  "titulo": "Licitacion vencida al nacer",
+  "presupuestoEstimadoCrc": 1000000.00,
+  "fechaCierre": "2020-01-01T00:00:00Z"
+}
+
+### Consultar el detalle de la licitación creada
+GET {{host}}/api/v1/licitaciones/{{licitacionId}}
+
+### Intentar registrar una oferta antes de publicar — debe devolver 422 con OFE-004
+POST {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+Content-Type: {{contentType}}
+
+{
+  "proveedorId": "{{proveedorAlfa}}",
+  "montoOfertadoCrc": 9000000.00
+}
+
+###############################################################################
+# 4. Ciclo de estados
+###############################################################################
+
+### Publicar la licitación
+PATCH {{host}}/api/v1/licitaciones/{{licitacionId}}/estado
+Content-Type: {{contentType}}
+
+{
+  "estado": 1
+}
+
+### Intentar volver a Borrador — debe devolver 409 con código LIC-002
+PATCH {{host}}/api/v1/licitaciones/{{licitacionId}}/estado
+Content-Type: {{contentType}}
+
+{
+  "estado": 0
+}
+
+###############################################################################
+# 5. Ofertas
+###############################################################################
+
+### Registrar una oferta válida del primer proveedor
+POST {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+Content-Type: {{contentType}}
+
+{
+  "proveedorId": "{{proveedorAlfa}}",
+  "montoOfertadoCrc": 11000000.00
+}
+
+### Intentar una segunda oferta del mismo proveedor — debe devolver 409 con OFE-001
+POST {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+Content-Type: {{contentType}}
+
+{
+  "proveedorId": "{{proveedorAlfa}}",
+  "montoOfertadoCrc": 10000000.00
+}
+
+### Intentar una oferta superior al presupuesto — debe devolver 422 con OFE-002
+POST {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+Content-Type: {{contentType}}
+
+{
+  "proveedorId": "{{proveedorBeta}}",
+  "montoOfertadoCrc": 13000000.00
+}
+
+### Registrar la oferta ganadora del segundo proveedor
+POST {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+Content-Type: {{contentType}}
+
+{
+  "proveedorId": "{{proveedorBeta}}",
+  "montoOfertadoCrc": 9000000.00
+}
+
+### Listar las ofertas de la licitación, ordenadas por monto ascendente
+GET {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+
+###############################################################################
+# 6. Evaluación y aprobación
+###############################################################################
+
+### Consultar la mejor oferta, el ahorro, la clasificación y el aprobador
+# Presupuesto 12 000 000 y mejor oferta 9 000 000 dan un ahorro del 25 %,
+# por lo que la clasificación esperada es "Oferta conveniente".
+# El monto cae en el rango de 1 000 000 a 9 999 999,99: aprobador "Gerencia".
+GET {{host}}/api/v1/licitaciones/{{licitacionId}}/mejor-oferta
+
+### Consultar qué aprobador corresponde a un monto arbitrario
+GET {{host}}/api/v1/niveles-aprobacion/aplicable?montoCrc=15000000
+
+###############################################################################
+# 7. Reglas sobre el presupuesto
+###############################################################################
+
+### Intentar reducir el presupuesto por debajo de la oferta más alta — 422 con LIC-004
+PUT {{host}}/api/v1/licitaciones/{{licitacionId}}
+Content-Type: {{contentType}}
+
+{
+  "codigo": "LIC-2026-001",
+  "titulo": "Compra de equipo de computo para laboratorios",
+  "presupuestoEstimadoCrc": 10000000.00,
+  "fechaCierre": "2026-12-31T23:00:00Z"
+}
+
+###############################################################################
+# 8. Tipo de cambio
+###############################################################################
+
+### Registrar un tipo de cambio nuevo sin activarlo
+# @name crearTipoCambio
+POST {{host}}/api/v1/tipos-cambio
+Content-Type: {{contentType}}
+
+{
+  "crcPorUsd": 512.75,
+  "fechaVigencia": "2026-08-18T00:00:00Z",
+  "activo": false
+}
+
+@tipoCambioId = {{crearTipoCambio.response.body.id}}
+
+### Activarlo — el anterior se desactiva en la misma transacción
+PATCH {{host}}/api/v1/tipos-cambio/{{tipoCambioId}}/activar
+
+### Verificar que ahora es el activo
+GET {{host}}/api/v1/tipos-cambio/activo
+
+### Verificar que los montos se convierten con el nuevo valor
+GET {{host}}/api/v1/licitaciones/{{licitacionId}}
+
+### Intentar eliminar el tipo de cambio activo — debe devolver 422 con TCB-001
+DELETE {{host}}/api/v1/tipos-cambio/{{tipoCambioId}}
+
+###############################################################################
+# 9. Niveles de aprobación
+###############################################################################
+
+### Intentar crear un rango que se traslapa con otro — 422 con APR-001
+POST {{host}}/api/v1/niveles-aprobacion
+Content-Type: {{contentType}}
+
+{
+  "montoMinimoCrc": 500000.00,
+  "montoMaximoCrc": 2000000.00,
+  "aprobador": "Rango invalido"
+}
+
+### Intentar crear un segundo rango abierto — 422 con APR-002
+POST {{host}}/api/v1/niveles-aprobacion
+Content-Type: {{contentType}}
+
+{
+  "montoMinimoCrc": 50000000.00,
+  "montoMaximoCrc": null,
+  "aprobador": "Segundo rango abierto"
+}
+
+###############################################################################
+# 10. Cierre y eliminación
+###############################################################################
+
+### Cerrar la licitación
+PATCH {{host}}/api/v1/licitaciones/{{licitacionId}}/estado
+Content-Type: {{contentType}}
+
+{
+  "estado": 2
+}
+
+### Intentar registrar una oferta en la licitación cerrada — 422 con OFE-004
+POST {{host}}/api/v1/licitaciones/{{licitacionId}}/ofertas
+Content-Type: {{contentType}}
+
+{
+  "proveedorId": "{{proveedorBeta}}",
+  "montoOfertadoCrc": 8000000.00
+}
+
+### Eliminar la licitación — al tener ofertas, el borrado es lógico
+# La cabecera X-Tipo-Borrado de la respuesta indica "logico".
+DELETE {{host}}/api/v1/licitaciones/{{licitacionId}}
+
+### Consultar un recurso inexistente — debe devolver 404 con GEN-002
+GET {{host}}/api/v1/licitaciones/00000000-0000-0000-0000-000000000000
