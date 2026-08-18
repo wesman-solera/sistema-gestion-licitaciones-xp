@@ -165,5 +165,5 @@ página.
 | `Domain/Servicios/NormalizadorTexto.cs` | Normalización y validación de caracteres |
 | `Application/Servicios/ProveedorServicio.cs` | Coordinación de los casos de uso |
 | `Infrastructure/Repositorios/ProveedorRepositorio.cs` | Acceso a datos y conteo agregado |
-| `Api/Controladores/ProveedoresController.cs` | Endpoints REST |
+| `Api/Controladores/ProveedoresApiController.cs` | Endpoints REST |
 | `Web/Controladores/ProveedoresController.cs` | Pantallas |

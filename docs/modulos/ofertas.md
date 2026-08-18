@@ -179,5 +179,5 @@ orden en que la base de datos devuelva las filas.
 | `Domain/Entidades/Oferta.cs` | Entidad y las cuatro condiciones |
 | `Application/Servicios/OfertaServicio.cs` | Coordinación y unicidad |
 | `Infrastructure/Repositorios/OfertaRepositorio.cs` | Acceso a datos y agregaciones |
-| `Api/Controladores/OfertasController.cs` | Endpoints REST |
+| `Api/Controladores/OfertasApiController.cs` | Endpoints REST |
 | `Web/Controladores/OfertasController.cs` | Pantallas |

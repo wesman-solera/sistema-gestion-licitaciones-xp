@@ -12,7 +12,7 @@ namespace Licitaciones.Api.Controladores;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/proveedores")]
 [Produces("application/json")]
-public sealed class ProveedoresController : ControllerBase
+public sealed class ProveedoresApiController : ControllerBase
 {
     private readonly IProveedorServicio _servicio;
     private readonly IOfertaServicio _ofertas;
@@ -20,7 +20,7 @@ public sealed class ProveedoresController : ControllerBase
     /// <summary>Inicializa el controlador.</summary>
     /// <param name="servicio">Servicio de aplicacion de proveedores.</param>
     /// <param name="ofertas">Servicio de aplicacion de ofertas.</param>
-    public ProveedoresController(IProveedorServicio servicio, IOfertaServicio ofertas)
+    public ProveedoresApiController(IProveedorServicio servicio, IOfertaServicio ofertas)
     {
         _servicio = servicio;
         _ofertas = ofertas;

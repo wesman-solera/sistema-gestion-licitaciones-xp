@@ -174,5 +174,5 @@ aparte para poder mostrarla.
 | `Application/Servicios/ContextoMoneda.cs` | Carga única por petición |
 | `Application/Servicios/TipoCambioServicio.cs` | Coordinación y transacción |
 | `Infrastructure/Repositorios/TipoCambioRepositorio.cs` | Acceso a datos |
-| `Api/Controladores/TiposCambioController.cs` | Endpoints REST |
+| `Api/Controladores/TiposCambioApiController.cs` | Endpoints REST |
 | `Web/Controladores/TiposCambioController.cs` | Pantallas |

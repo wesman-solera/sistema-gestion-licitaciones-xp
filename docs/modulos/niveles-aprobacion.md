@@ -171,5 +171,5 @@ comparación por uno.
 | `Domain/Servicios/SelectorNivelAprobacion.cs` | Selección y validación del conjunto |
 | `Application/Servicios/NivelAprobacionServicio.cs` | Coordinación de los casos de uso |
 | `Infrastructure/Repositorios/NivelAprobacionRepositorio.cs` | Acceso a datos |
-| `Api/Controladores/NivelesAprobacionController.cs` | Endpoints REST |
+| `Api/Controladores/NivelesAprobacionApiController.cs` | Endpoints REST |
 | `Web/Controladores/NivelesAprobacionController.cs` | Pantallas |

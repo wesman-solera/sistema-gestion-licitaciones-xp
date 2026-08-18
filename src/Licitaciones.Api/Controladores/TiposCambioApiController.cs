@@ -16,13 +16,13 @@ namespace Licitaciones.Api.Controladores;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tipos-cambio")]
 [Produces("application/json")]
-public sealed class TiposCambioController : ControllerBase
+public sealed class TiposCambioApiController : ControllerBase
 {
     private readonly ITipoCambioServicio _servicio;
 
     /// <summary>Inicializa el controlador.</summary>
     /// <param name="servicio">Servicio de aplicacion de tipos de cambio.</param>
-    public TiposCambioController(ITipoCambioServicio servicio)
+    public TiposCambioApiController(ITipoCambioServicio servicio)
     {
         _servicio = servicio;
     }

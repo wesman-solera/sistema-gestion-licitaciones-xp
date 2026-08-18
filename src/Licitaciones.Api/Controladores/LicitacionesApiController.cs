@@ -13,13 +13,13 @@ namespace Licitaciones.Api.Controladores;
 /// El controlador es deliberadamente delgado (requisito 6.4): traduce la peticion HTTP a una
 /// llamada del servicio de aplicacion y el resultado a un codigo de estado. No contiene ninguna
 /// regla de negocio ni acceso a datos. Los errores no se capturan aqui: los traduce
-/// <see cref="ManejadorExcepcionesGlobal"/> de forma uniforme para toda la API.
+/// <see cref="Comun.ManejadorExcepcionesGlobal"/> de forma uniforme para toda la API.
 /// </remarks>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/licitaciones")]
 [Produces("application/json")]
-public sealed class LicitacionesController : ControllerBase
+public sealed class LicitacionesApiController : ControllerBase
 {
     private readonly ILicitacionServicio _servicio;
     private readonly IOfertaServicio _ofertas;
@@ -27,7 +27,7 @@ public sealed class LicitacionesController : ControllerBase
     /// <summary>Inicializa el controlador.</summary>
     /// <param name="servicio">Servicio de aplicacion de licitaciones.</param>
     /// <param name="ofertas">Servicio de aplicacion de ofertas.</param>
-    public LicitacionesController(ILicitacionServicio servicio, IOfertaServicio ofertas)
+    public LicitacionesApiController(ILicitacionServicio servicio, IOfertaServicio ofertas)
     {
         _servicio = servicio;
         _ofertas = ofertas;

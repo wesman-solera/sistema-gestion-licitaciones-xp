@@ -16,13 +16,13 @@ namespace Licitaciones.Api.Controladores;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/niveles-aprobacion")]
 [Produces("application/json")]
-public sealed class NivelesAprobacionController : ControllerBase
+public sealed class NivelesAprobacionApiController : ControllerBase
 {
     private readonly INivelAprobacionServicio _servicio;
 
     /// <summary>Inicializa el controlador.</summary>
     /// <param name="servicio">Servicio de aplicacion de niveles de aprobacion.</param>
-    public NivelesAprobacionController(INivelAprobacionServicio servicio)
+    public NivelesAprobacionApiController(INivelAprobacionServicio servicio)
     {
         _servicio = servicio;
     }

@@ -185,5 +185,5 @@ desincronizado con las ofertas reales.
 | `Domain/ObjetosValor/ResultadoEvaluacionOfertas.cs` | Resultado de la evaluación |
 | `Application/Servicios/LicitacionServicio.cs` | Coordinación de los casos de uso |
 | `Infrastructure/Repositorios/LicitacionRepositorio.cs` | Acceso a datos |
-| `Api/Controladores/LicitacionesController.cs` | Endpoints REST |
+| `Api/Controladores/LicitacionesApiController.cs` | Endpoints REST |
 | `Web/Controladores/LicitacionesController.cs` | Pantallas |

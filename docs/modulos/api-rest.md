@@ -19,6 +19,20 @@ explica **cómo está construida**.
 
 ---
 
+## Por qué los controladores llevan el sufijo `Api`
+
+Los controladores REST se llaman `LicitacionesApiController`, `ProveedoresApiController` y así
+sucesivamente, mientras que los de la interfaz web se llaman `LicitacionesController`,
+`ProveedoresController`, etc.
+
+La razón es que ambos conjuntos se alojan en el mismo proceso. Dos controladores con el mismo
+nombre de tipo hacen ambigua la generación de enlaces por nombre de controlador, aunque los de la
+API usen enrutamiento por atributo y no participen de la ruta convencional. El sufijo elimina esa
+ambigüedad y, de paso, hace evidente cuál es cuál al leer una traza.
+
+**Las rutas no cambian.** Siguen siendo `/api/v1/licitaciones` y las demás, porque están declaradas
+de forma explícita en el atributo `[Route]` y no se derivan del nombre del tipo.
+
 ## Controladores delgados
 
 El requisito 6.4 pide *«controladores delgados; la lógica de negocio debe residir en servicios o
