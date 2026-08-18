@@ -1,0 +1,91 @@
+# ---------------------------------------------------------------------------------------------
+# PostgreSQL como StatefulSet y no como Deployment.
+#
+# Un Deployment puede crear el pod nuevo antes de terminar el viejo, y ambos montarian el mismo
+# volumen a la vez: PostgreSQL no lo admite y la base podria corromperse. El StatefulSet
+# garantiza identidad estable y reemplazo ordenado, que es lo que necesita una base de datos.
+# ---------------------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: licitaciones-postgres
+  namespace: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: base-datos
+spec:
+  serviceName: licitaciones-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: licitaciones
+      app.kubernetes.io/component: base-datos
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: licitaciones
+        app.kubernetes.io/component: base-datos
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: licitaciones-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: licitaciones-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: licitaciones-secret
+                  key: POSTGRES_PASSWORD
+            # La imagen oficial crea la base en un subdirectorio del volumen montado. Sin esta
+            # variable, initdb falla porque el punto de montaje no esta vacio.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: datos
+              mountPath: /var/lib/postgresql/data
+          startupProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            # Hasta dos minutos para el arranque inicial, que en el primer despliegue incluye
+            # la creacion del cluster.
+            failureThreshold: 24
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+      volumes:
+        - name: datos
+          persistentVolumeClaim:
+            claimName: licitaciones-postgres-pvc

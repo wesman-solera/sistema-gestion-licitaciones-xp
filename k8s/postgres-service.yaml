@@ -1,0 +1,20 @@
+# Servicio sin direccion IP propia (headless): junto con el StatefulSet da a la instancia de
+# PostgreSQL un nombre DNS estable, que es el que usa la cadena de conexion de la aplicacion.
+apiVersion: v1
+kind: Service
+metadata:
+  name: licitaciones-postgres
+  namespace: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: base-datos
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: base-datos
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

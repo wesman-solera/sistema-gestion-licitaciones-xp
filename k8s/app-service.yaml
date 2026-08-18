@@ -1,0 +1,20 @@
+# Servicio de la aplicacion. Se expone como ClusterIP y se publica hacia fuera con
+# "kubectl port-forward" o con un Ingress, segun el entorno.
+apiVersion: v1
+kind: Service
+metadata:
+  name: licitaciones-aplicacion
+  namespace: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: aplicacion
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: aplicacion
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

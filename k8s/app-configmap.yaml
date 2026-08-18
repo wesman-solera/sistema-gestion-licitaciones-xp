@@ -1,0 +1,18 @@
+# Configuracion no sensible de la aplicacion.
+# Las credenciales viajan aparte, en el Secret: mezclarlas aqui las expondria a cualquiera con
+# permiso de lectura sobre ConfigMaps (seccion 11).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: licitaciones-config
+  namespace: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: aplicacion
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_HTTP_PORTS: "8080"
+  TZ: "America/Costa_Rica"
+  POSTGRES_DB: "licitaciones"
+  POSTGRES_HOST: "licitaciones-postgres"
+  POSTGRES_PORT: "5432"

@@ -1,0 +1,9 @@
+# Espacio de nombres propio: aisla los objetos del proyecto del resto del cluster y permite
+# aplicar cuotas o politicas de red al conjunto completo.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/part-of: sistema-gestion-licitaciones

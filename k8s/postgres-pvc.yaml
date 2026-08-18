@@ -1,0 +1,18 @@
+# Reclamo de volumen persistente para los datos de PostgreSQL.
+# Sin el, los datos vivirian en el sistema de archivos efimero del pod y se perderian en cada
+# reprogramacion. La conservacion de datos tras un reinicio es un criterio de aceptacion
+# explicito (seccion 13.2).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: licitaciones-postgres-pvc
+  namespace: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: base-datos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,0 +1,91 @@
+# ---------------------------------------------------------------------------------------------
+# Despliegue de la aplicacion web (interfaz MVC + API REST + documentacion interactiva).
+#
+# La aplicacion no guarda estado en disco, por lo que puede escalarse horizontalmente y
+# reemplazarse sin coordinacion. Las migraciones las aplica el contenedor al arrancar, con
+# reintentos, de modo que el orden respecto de PostgreSQL no tiene que forzarse desde fuera.
+# ---------------------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: licitaciones-aplicacion
+  namespace: licitaciones
+  labels:
+    app.kubernetes.io/name: licitaciones
+    app.kubernetes.io/component: aplicacion
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: licitaciones
+      app.kubernetes.io/component: aplicacion
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: licitaciones
+        app.kubernetes.io/component: aplicacion
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654
+        fsGroup: 1654
+      containers:
+        - name: aplicacion
+          image: ghcr.io/wesman-solera/sistema-gestion-licitaciones-xp:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: licitaciones-config
+          env:
+            - name: ConnectionStrings__Licitaciones
+              valueFrom:
+                secretKeyRef:
+                  name: licitaciones-secret
+                  key: ConnectionStrings__Licitaciones
+          # Sonda de arranque: da margen a que se apliquen las migraciones antes de que las
+          # demas sondas empiecen a evaluar el pod.
+          startupProbe:
+            httpGet:
+              path: /health/vivo
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          # Sonda de disponibilidad: incluye la base de datos, porque un pod sin base no puede
+          # atender peticiones utiles y debe salir del balanceo.
+          readinessProbe:
+            httpGet:
+              path: /health/listo
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Sonda de vida: deliberadamente NO consulta la base de datos. Si lo hiciera, una caida
+          # de PostgreSQL reiniciaria en bucle todos los pods de la aplicacion sin arreglar nada.
+          livenessProbe:
+            httpGet:
+              path: /health/vivo
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "768Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
