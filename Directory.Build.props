@@ -1,0 +1,22 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <Authors>Wesman Edel Solera Rodriguez</Authors>
+    <Product>Sistema de Gestion de Licitaciones</Product>
+    <Company>Universidad Tecnica Nacional</Company>
+    <NeutralLanguage>es-CR</NeutralLanguage>
+  </PropertyGroup>
+
+  <!-- La documentacion XML es obligatoria en las capas publicas del sistema
+       (requisito 6.4 del enunciado). Se habilita por proyecto en su .csproj. -->
+
+</Project>

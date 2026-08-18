@@ -1,0 +1,54 @@
+# Estandares de codigo del proyecto (practica XP: estandares de codigo).
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,md,csproj,props,targets}]
+indent_size = 2
+
+[*.cs]
+indent_size = 4
+
+# Organizacion de usings
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace:warning
+
+# Namespaces con ambito de archivo
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Preferencias de lenguaje
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_prefer_braces = true:warning
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_style_prefer_primary_constructors = false:silent
+
+# Nomenclatura: constantes en PascalCase
+dotnet_naming_rule.constantes_pascal.severity = warning
+dotnet_naming_rule.constantes_pascal.symbols = constantes
+dotnet_naming_rule.constantes_pascal.style = pascal_case
+dotnet_naming_symbols.constantes.applicable_kinds = field
+dotnet_naming_symbols.constantes.required_modifiers = const
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+# Nomenclatura: campos privados con guion bajo
+dotnet_naming_rule.campos_privados.severity = warning
+dotnet_naming_rule.campos_privados.symbols = campos_privados_sym
+dotnet_naming_rule.campos_privados.style = guion_bajo
+dotnet_naming_symbols.campos_privados_sym.applicable_kinds = field
+dotnet_naming_symbols.campos_privados_sym.applicable_accessibilities = private
+dotnet_naming_style.guion_bajo.capitalization = camel_case
+dotnet_naming_style.guion_bajo.required_prefix = _
+
+# Calidad
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1031.severity = suggestion
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1848.severity = none

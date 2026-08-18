@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Licitaciones.Domain</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- El dominio no depende de infraestructura: no se permiten referencias a EF Core,
+         ASP.NET Core ni a ningun paquete de acceso a datos (requisito 6.2). -->
+  </PropertyGroup>
+
+</Project>

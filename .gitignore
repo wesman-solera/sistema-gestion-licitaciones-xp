@@ -1,0 +1,54 @@
+## Binarios y artefactos de compilacion
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+## Resultados de pruebas y cobertura
+[Tt]est[Rr]esult*/
+coverage/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+TestResults/
+
+## Secretos y configuracion local  (requisito 11 y 14.2)
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.local.json
+*.pfx
+*.p12
+*.key
+secrets.json
+k8s/app-secret.yaml
+
+## Herramientas y IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+.DS_Store
+Thumbs.db
+
+## Playwright
+tests/Licitaciones.FunctionalTests/playwright-report/
+tests/Licitaciones.FunctionalTests/.playwright/
+**/playwright/.cache/
+
+## Node (solo si se usan utilidades locales)
+node_modules/
