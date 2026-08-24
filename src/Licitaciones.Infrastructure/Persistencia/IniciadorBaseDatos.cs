@@ -57,7 +57,7 @@ public static class IniciadorBaseDatos
 
                 registrador.LogWarning(
                     excepcion,
-                    "La base de datos aun no responde (intento {Intento} de {Total}). Reintentando en {Espera}.",
+                    "No se pudieron aplicar las migraciones (intento {Intento} de {Total}). Reintentando en {Espera}.",
                     intento,
                     IntentosMaximos,
                     espera);

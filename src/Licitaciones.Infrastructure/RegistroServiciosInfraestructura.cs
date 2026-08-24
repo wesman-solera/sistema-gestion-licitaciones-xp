@@ -4,6 +4,7 @@ using Licitaciones.Infrastructure.Persistencia;
 using Licitaciones.Infrastructure.Repositorios;
 using Licitaciones.Infrastructure.Servicios;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,6 +41,7 @@ public static class RegistroServiciosInfraestructura
                 "Defina ConnectionStrings__Licitaciones como variable de entorno o secreto.");
 
         servicios.AddDbContext<LicitacionesDbContext>(opciones =>
+        {
             opciones.UseNpgsql(cadena, npgsql =>
             {
                 npgsql.MigrationsAssembly(typeof(LicitacionesDbContext).Assembly.FullName);
@@ -47,7 +49,11 @@ public static class RegistroServiciosInfraestructura
                 // Reintento ante fallos transitorios de red, habitual en Kubernetes cuando el
                 // pod de PostgreSQL se reprograma.
                 npgsql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(5), null);
-            }));
+            });
+
+            opciones.ConfigureWarnings(avisos =>
+                avisos.Ignore(RelationalEventId.PendingModelChangesWarning));
+        });
 
         servicios.AddScoped<IUnidadTrabajo, UnidadTrabajo>();
         servicios.AddScoped<ILicitacionRepositorio, LicitacionRepositorio>();

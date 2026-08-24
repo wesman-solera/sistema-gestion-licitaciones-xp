@@ -1,5 +1,6 @@
 using Licitaciones.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Testcontainers.PostgreSql;
 
 namespace Licitaciones.IntegrationTests.Infraestructura;
@@ -56,6 +57,9 @@ public sealed class PostgresFixture : IAsyncLifetime
         var opciones = new DbContextOptionsBuilder<LicitacionesDbContext>()
             .UseNpgsql(CadenaConexion, npgsql =>
                 npgsql.MigrationsAssembly(typeof(LicitacionesDbContext).Assembly.FullName))
+            // Mismo criterio que en RegistroServiciosInfraestructura: la migracion escrita a mano
+            // es la fuente de verdad del esquema, no la instantanea de diseno.
+            .ConfigureWarnings(avisos => avisos.Ignore(RelationalEventId.PendingModelChangesWarning))
             .Options;
 
         return new LicitacionesDbContext(opciones);

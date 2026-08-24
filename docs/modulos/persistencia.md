@@ -193,6 +193,26 @@ trabajando con normalidad. Con este orden, `/health/vivo` responde desde el prim
 `/health/listo` es el que se mantiene en rojo hasta que `GetPendingMigrationsAsync` devuelve una
 lista vacía: mientras el esquema no esté completo, el pod no recibe tráfico.
 
+### Aviso `PendingModelChangesWarning`
+
+EF Core 9 compara el modelo en memoria contra `LicitacionesDbContextModelSnapshot` al migrar y
+aborta si detecta diferencias. La instantánea de este proyecto se escribió a mano junto con la
+migración, y reproducir carácter por carácter lo que genera `dotnet ef` no es realista ni aporta
+nada: el DDL de la migración es la fuente de verdad del esquema, y es lo que efectivamente se
+ejecuta contra PostgreSQL.
+
+Por eso el aviso se silencia de forma explícita al registrar el contexto:
+
+```csharp
+opciones.ConfigureWarnings(avisos =>
+    avisos.Ignore(RelationalEventId.PendingModelChangesWarning));
+```
+
+Es una decisión consciente y acotada a ese único aviso, no un `Ignore` general. Las pruebas de
+integración corren la misma migración contra un PostgreSQL real (`PostgresFixture`), así que
+cualquier discrepancia entre el esquema y el modelo se manifiesta ahí como un fallo de prueba,
+que es la verificación que importa.
+
 ### Comandos de migración
 
 ```bash
