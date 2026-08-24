@@ -13,16 +13,17 @@ WORKDIR /origen
 
 # Se copian primero los archivos de proyecto y se restauran las dependencias. Docker cachea esta
 # capa, de modo que un cambio de codigo que no toque las referencias no vuelve a descargar nada.
-COPY global.json Directory.Build.props Licitaciones.sln ./
+#
+# Solo se copian los proyectos que la aplicacion web necesita para restaurar: Domain, Application,
+# Infrastructure y Api. Los proyectos de prueba quedan fuera a proposito, y por partida doble:
+# .dockerignore excluye la carpeta tests del contexto de construccion, y la imagen de ejecucion no
+# tiene por que cargar con dependencias que solo sirven para probar.
+COPY global.json Directory.Build.props ./
 COPY src/Licitaciones.Domain/Licitaciones.Domain.csproj src/Licitaciones.Domain/
 COPY src/Licitaciones.Application/Licitaciones.Application.csproj src/Licitaciones.Application/
 COPY src/Licitaciones.Infrastructure/Licitaciones.Infrastructure.csproj src/Licitaciones.Infrastructure/
 COPY src/Licitaciones.Api/Licitaciones.Api.csproj src/Licitaciones.Api/
 COPY src/Licitaciones.Web/Licitaciones.Web.csproj src/Licitaciones.Web/
-COPY tests/Licitaciones.UnitTests/Licitaciones.UnitTests.csproj tests/Licitaciones.UnitTests/
-COPY tests/Licitaciones.IntegrationTests/Licitaciones.IntegrationTests.csproj tests/Licitaciones.IntegrationTests/
-COPY tests/Licitaciones.FunctionalTests/Licitaciones.FunctionalTests.csproj tests/Licitaciones.FunctionalTests/
-
 RUN dotnet restore src/Licitaciones.Web/Licitaciones.Web.csproj
 
 COPY src/ src/
