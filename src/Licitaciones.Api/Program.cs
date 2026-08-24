@@ -39,11 +39,8 @@ public class Program
 
         constructor.Services.AddControllers();
 
-        string cadenaConexion = constructor.Configuration.GetConnectionString(
-            RegistroServiciosInfraestructura.NombreCadenaConexion) ?? string.Empty;
-
         constructor.Services.AddHealthChecks()
-            .AddNpgSql(cadenaConexion, name: "postgresql");
+            .AddCheck<ComprobacionSaludBaseDatos>(ComprobacionSaludBaseDatos.Nombre);
 
         WebApplication aplicacion = constructor.Build();
 

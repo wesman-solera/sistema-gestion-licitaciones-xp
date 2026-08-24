@@ -188,6 +188,11 @@ La separación es deliberada y está explicada en [../kubernetes.md](../kubernet
 vida consultara la base de datos, una caída de PostgreSQL provocaría el reinicio en bucle de todos
 los pods de la aplicación sin resolver nada.
 
+La comprobación de la base de datos es propia, `ComprobacionSaludBaseDatos`, y no un paquete de
+terceros. La verificación que hace falta es exactamente una: si el contexto puede abrir conexión,
+la aplicación puede atender peticiones útiles. Escribirla son treinta líneas, y evita arrastrar una
+dependencia externa cuya versión habría que mantener alineada con el resto de la solución.
+
 ---
 
 ## Dos endpoints para registrar una oferta

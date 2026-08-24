@@ -5,6 +5,7 @@ using Licitaciones.Application;
 using Licitaciones.Infrastructure;
 using Licitaciones.Infrastructure.Persistencia;
 using Licitaciones.Web.Servicios;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
 
 namespace Licitaciones.Web;
@@ -52,11 +53,10 @@ public class Program
         constructor.Services.AddScoped<PreferenciasUsuario>();
         constructor.Services.AddScoped<FormateadorMonto>();
 
-        string cadenaConexion = constructor.Configuration.GetConnectionString(
-            RegistroServiciosInfraestructura.NombreCadenaConexion) ?? string.Empty;
-
         constructor.Services.AddHealthChecks()
-            .AddNpgSql(cadenaConexion, name: "postgresql", tags: ["listo"]);
+            .AddCheck<ComprobacionSaludBaseDatos>(
+                ComprobacionSaludBaseDatos.Nombre,
+                tags: [ComprobacionSaludBaseDatos.EtiquetaDisponibilidad]);
 
         WebApplication aplicacion = constructor.Build();
 
@@ -97,9 +97,10 @@ public class Program
             pattern: "{controller=Inicio}/{action=Index}/{id?}");
 
         aplicacion.MapHealthChecks("/health");
-        aplicacion.MapHealthChecks("/health/listo", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+        aplicacion.MapHealthChecks("/health/listo", new HealthCheckOptions
         {
-            Predicate = registro => registro.Tags.Contains("listo")
+            Predicate = registro =>
+                registro.Tags.Contains(ComprobacionSaludBaseDatos.EtiquetaDisponibilidad)
         });
 
         // Sonda de arranque y de vida: responde sin tocar la base de datos, de modo que un fallo
