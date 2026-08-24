@@ -6,7 +6,7 @@ namespace Licitaciones.Domain.Excepciones;
 /// Se lanza cuando el recurso solicitado no existe o fue eliminado logicamente.
 /// </summary>
 /// <remarks>Se traduce a HTTP 404 Not Found.</remarks>
-public sealed class RecursoNoEncontradoException : ExcepcionDominio
+public sealed class RecursoNoEncontradoException : DominioException
 {
     /// <summary>Nombre del tipo de recurso buscado, por ejemplo <c>Licitacion</c>.</summary>
     public string Recurso { get; }

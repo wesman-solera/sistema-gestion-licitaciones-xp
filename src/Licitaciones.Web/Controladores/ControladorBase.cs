@@ -78,7 +78,7 @@ public abstract class ControladorBase : Controller
 
             return false;
         }
-        catch (ExcepcionDominio dominio)
+        catch (DominioException dominio)
         {
             ModelState.AddModelError(campoPorDefecto, dominio.Message);
 

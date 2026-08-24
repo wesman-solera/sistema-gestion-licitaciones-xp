@@ -10,7 +10,7 @@ namespace Licitaciones.Domain.Excepciones;
 /// El ciclo permitido esta descrito en la seccion 8.1 del enunciado e implementado en
 /// <see cref="Servicios.PoliticaTransicionEstado"/>. Se traduce a HTTP 409 Conflict.
 /// </remarks>
-public sealed class TransicionEstadoInvalidaException : ExcepcionDominio
+public sealed class TransicionEstadoInvalidaException : DominioException
 {
     /// <summary>Estado en el que se encuentra actualmente la licitacion.</summary>
     public EstadoLicitacion EstadoActual { get; }

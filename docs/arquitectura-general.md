@@ -201,7 +201,7 @@ graph LR
     B -->|ConflictoUnicidad| E[409 Conflict]
     B -->|TransicionEstadoInvalida| E
     B -->|DbUpdateConcurrency| E
-    B -->|ExcepcionDominio| F[422 Unprocessable Entity]
+    B -->|DominioException| F[422 Unprocessable Entity]
     B -->|Violación de índice único| E
     B -->|Violación de clave foránea| F
     B -->|Otra| G[500 controlado]

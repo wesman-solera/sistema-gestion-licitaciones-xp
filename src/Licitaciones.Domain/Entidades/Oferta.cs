@@ -112,9 +112,20 @@ public sealed class Oferta
     /// <exception cref="ReglaNegocioVioladaException">
     /// Si la licitacion esta cerrada o vencida: en ese caso la oferta es evidencia inmutable.
     /// </exception>
+    /// <exception cref="ArgumentException">Si la licitacion recibida no es la de esta oferta.</exception>
     public void AsegurarMutable(Licitacion licitacion, DateTimeOffset ahoraUtc)
     {
         ArgumentNullException.ThrowIfNull(licitacion);
+
+        // La licitacion llega como parametro porque el dominio no consulta la persistencia. Que
+        // sea la correcta no puede darse por supuesto: pasar otra haria que la oferta se validara
+        // contra un estado y un vencimiento ajenos.
+        if (licitacion.Id != LicitacionId)
+        {
+            throw new ArgumentException(
+                "La licitacion recibida no corresponde a esta oferta.",
+                nameof(licitacion));
+        }
 
         if (licitacion.EstaCerradaFuncionalmente(ahoraUtc))
         {

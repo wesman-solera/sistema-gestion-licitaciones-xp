@@ -142,7 +142,7 @@ public sealed class ManejadorExcepcionesGlobal : IExceptionHandler
 
         // Toda otra violacion de regla de negocio es semanticamente correcta pero imposible de
         // procesar, que es exactamente lo que significa 422.
-        ExcepcionDominio dominio => (
+        DominioException dominio => (
             StatusCodes.Status422UnprocessableEntity,
             "Regla de negocio incumplida",
             dominio.CodigoError,

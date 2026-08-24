@@ -8,7 +8,7 @@ namespace Licitaciones.Domain.Excepciones;
 /// Esta excepcion cubre las dos primeras capas y tambien la traduccion del error de indice
 /// que devuelve PostgreSQL. Se traduce a HTTP 409 Conflict.
 /// </remarks>
-public sealed class ConflictoUnicidadException : ExcepcionDominio
+public sealed class ConflictoUnicidadException : DominioException
 {
     /// <summary>Nombre logico del campo en conflicto, util para resaltarlo en el formulario.</summary>
     public string Campo { get; }

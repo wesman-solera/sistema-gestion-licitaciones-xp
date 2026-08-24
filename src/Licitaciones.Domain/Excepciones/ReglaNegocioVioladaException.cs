@@ -4,7 +4,7 @@ namespace Licitaciones.Domain.Excepciones;
 /// Se lanza cuando una operacion incumple una regla de negocio del sistema.
 /// </summary>
 /// <remarks>Se traduce a HTTP 422 Unprocessable Entity en la capa de API.</remarks>
-public sealed class ReglaNegocioVioladaException : ExcepcionDominio
+public sealed class ReglaNegocioVioladaException : DominioException
 {
     /// <summary>Inicializa la excepcion.</summary>
     /// <param name="mensaje">Texto seguro para mostrar al usuario final.</param>

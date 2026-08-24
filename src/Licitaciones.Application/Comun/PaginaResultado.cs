@@ -24,11 +24,4 @@ public sealed record PaginaResultado<T>(
 
     /// <summary>Indica si existe una pagina siguiente.</summary>
     public bool TieneSiguiente => Pagina < TotalPaginas;
-
-    /// <summary>Crea una pagina vacia conservando los parametros de consulta.</summary>
-    /// <param name="pagina">Numero de pagina solicitado.</param>
-    /// <param name="tamanoPagina">Tamano de pagina solicitado.</param>
-    /// <returns>Una pagina sin elementos.</returns>
-    public static PaginaResultado<T> Vacia(int pagina, int tamanoPagina)
-        => new([], pagina, tamanoPagina, 0);
 }

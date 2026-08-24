@@ -131,7 +131,7 @@ HTTP.
 | `ConflictoUnicidadException` | 409 | El valor ya está en uso |
 | `TransicionEstadoInvalidaException` | 409 | El estado actual no permite la operación |
 | `DbUpdateConcurrencyException` | 409 | Otro usuario modificó el registro |
-| `ExcepcionDominio` | 422 | Bien formada, pero incumple una regla |
+| `DominioException` | 422 | Bien formada, pero incumple una regla |
 | Violación de índice único | 409 | Con el código deducido del nombre del índice |
 | Violación de clave foránea | 422 | Integridad referencial |
 | Cualquier otra | 500 | Con mensaje genérico |

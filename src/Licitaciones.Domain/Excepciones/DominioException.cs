@@ -9,7 +9,7 @@ namespace Licitaciones.Domain.Excepciones;
 /// El mensaje esta escrito para ser mostrado directamente al usuario final: nunca debe
 /// contener rutas internas, consultas SQL ni datos de conexion (seccion 10.2).
 /// </remarks>
-public abstract class ExcepcionDominio : Exception
+public abstract class DominioException : Exception
 {
     /// <summary>Codigo estable definido en <see cref="Constantes.CodigosError"/>.</summary>
     public string CodigoError { get; }
@@ -17,7 +17,7 @@ public abstract class ExcepcionDominio : Exception
     /// <summary>Inicializa la excepcion con un mensaje apto para el usuario y su codigo.</summary>
     /// <param name="mensaje">Texto seguro para mostrar al usuario final.</param>
     /// <param name="codigoError">Codigo estable de <see cref="Constantes.CodigosError"/>.</param>
-    protected ExcepcionDominio(string mensaje, string codigoError)
+    protected DominioException(string mensaje, string codigoError)
         : base(mensaje)
     {
         CodigoError = codigoError;
