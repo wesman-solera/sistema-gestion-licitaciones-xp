@@ -115,61 +115,61 @@ public sealed class ManejadorExcepcionesGlobal : IExceptionHandler
     /// <returns>Tupla con el estado, el titulo, el codigo y los errores de campo si los hay.</returns>
     private static (int Estado, string Titulo, string Codigo, IDictionary<string, string[]>? Errores)
         Traducir(Exception excepcion) => excepcion switch
-    {
-        ValidacionException validacion => (
-            StatusCodes.Status400BadRequest,
-            "Datos de entrada invalidos",
-            CodigosError.ValidacionFallida,
-            validacion.Errores.ToDictionary(e => e.Key, e => e.Value)),
+        {
+            ValidacionException validacion => (
+                StatusCodes.Status400BadRequest,
+                "Datos de entrada invalidos",
+                CodigosError.ValidacionFallida,
+                validacion.Errores.ToDictionary(e => e.Key, e => e.Value)),
 
-        RecursoNoEncontradoException noEncontrado => (
-            StatusCodes.Status404NotFound,
-            "Recurso no encontrado",
-            noEncontrado.CodigoError,
-            null),
+            RecursoNoEncontradoException noEncontrado => (
+                StatusCodes.Status404NotFound,
+                "Recurso no encontrado",
+                noEncontrado.CodigoError,
+                null),
 
-        ConflictoUnicidadException conflicto => (
-            StatusCodes.Status409Conflict,
-            "Conflicto de unicidad",
-            conflicto.CodigoError,
-            new Dictionary<string, string[]> { [conflicto.Campo] = [conflicto.Message] }),
+            ConflictoUnicidadException conflicto => (
+                StatusCodes.Status409Conflict,
+                "Conflicto de unicidad",
+                conflicto.CodigoError,
+                new Dictionary<string, string[]> { [conflicto.Campo] = [conflicto.Message] }),
 
-        TransicionEstadoInvalidaException transicion => (
-            StatusCodes.Status409Conflict,
-            "Transicion de estado no permitida",
-            transicion.CodigoError,
-            null),
+            TransicionEstadoInvalidaException transicion => (
+                StatusCodes.Status409Conflict,
+                "Transicion de estado no permitida",
+                transicion.CodigoError,
+                null),
 
-        // Toda otra violacion de regla de negocio es semanticamente correcta pero imposible de
-        // procesar, que es exactamente lo que significa 422.
-        DominioException dominio => (
-            StatusCodes.Status422UnprocessableEntity,
-            "Regla de negocio incumplida",
-            dominio.CodigoError,
-            null),
+            // Toda otra violacion de regla de negocio es semanticamente correcta pero imposible de
+            // procesar, que es exactamente lo que significa 422.
+            DominioException dominio => (
+                StatusCodes.Status422UnprocessableEntity,
+                "Regla de negocio incumplida",
+                dominio.CodigoError,
+                null),
 
-        DbUpdateConcurrencyException => (
-            StatusCodes.Status409Conflict,
-            "Conflicto de concurrencia",
-            CodigosError.ConflictoConcurrencia,
-            null),
+            DbUpdateConcurrencyException => (
+                StatusCodes.Status409Conflict,
+                "Conflicto de concurrencia",
+                CodigosError.ConflictoConcurrencia,
+                null),
 
-        DbUpdateException actualizacion => TraducirErrorBaseDatos(actualizacion),
+            DbUpdateException actualizacion => TraducirErrorBaseDatos(actualizacion),
 
-        // 499 no esta en la lista de StatusCodes de ASP.NET Core; es la convencion de nginx
-        // para "el cliente cerro la conexion", que es exactamente lo que ocurrio.
-        OperationCanceledException => (
-            EstadoClienteCerroConexion,
-            "Solicitud cancelada",
-            CodigosError.ValidacionFallida,
-            null),
+            // 499 no esta en la lista de StatusCodes de ASP.NET Core; es la convencion de nginx
+            // para "el cliente cerro la conexion", que es exactamente lo que ocurrio.
+            OperationCanceledException => (
+                EstadoClienteCerroConexion,
+                "Solicitud cancelada",
+                CodigosError.ValidacionFallida,
+                null),
 
-        _ => (
-            StatusCodes.Status500InternalServerError,
-            "Error interno del servidor",
-            "GEN-500",
-            null)
-    };
+            _ => (
+                StatusCodes.Status500InternalServerError,
+                "Error interno del servidor",
+                "GEN-500",
+                null)
+        };
 
     /// <summary>
     /// Traduce un error de PostgreSQL a un mensaje controlado.
