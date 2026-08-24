@@ -19,6 +19,9 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <!-- IHealthCheck vive aqui. El paquete es independiente del host: no arrastra ASP.NET Core,
+         asi que una biblioteca de clases puede implementar la comprobacion sin volverse web. -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="9.0.0" />
   </ItemGroup>
 
 </Project>
