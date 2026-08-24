@@ -1,3 +1,4 @@
+using System.Globalization;
 using Licitaciones.Api.Comun;
 using Licitaciones.Application.Comun;
 
@@ -40,8 +41,10 @@ public sealed class ListadoViewModel<T>
     {
         var valores = new Dictionary<string, string>
         {
-            ["pagina"] = (pagina ?? Parametros.Pagina).ToString(),
-            ["tamanoPagina"] = Parametros.TamanoPagina.ToString(),
+            // Cultura invariante: un valor de ruta no debe depender de la configuracion
+            // regional del servidor, aunque para un entero la diferencia sea invisible hoy.
+            ["pagina"] = (pagina ?? Parametros.Pagina).ToString(CultureInfo.InvariantCulture),
+            ["tamanoPagina"] = Parametros.TamanoPagina.ToString(CultureInfo.InvariantCulture),
             ["buscar"] = Parametros.Buscar ?? string.Empty,
             ["ordenarPor"] = ordenarPor ?? Parametros.OrdenarPor ?? string.Empty,
             ["descendente"] = (descendente ?? Parametros.Descendente).ToString().ToLowerInvariant(),

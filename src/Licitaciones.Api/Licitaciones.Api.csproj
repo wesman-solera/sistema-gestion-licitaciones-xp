@@ -8,6 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- El proyecto Web referencia a este para alojar los controladores REST en su mismo
+         proceso. Al publicar, ambos aportarian su appsettings.json con la misma ruta relativa
+         y el SDK aborta con NETSDK1152.
+
+         La configuracion desplegada es la del host, que es Web. Estos archivos se conservan
+         para poder ejecutar la API por separado en desarrollo, pero no viajan a la publicacion.
+         En contenedor la configuracion llega por variables de entorno de todos modos. -->
+    <Content Update="appsettings.json;appsettings.Development.json"
+             CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Licitaciones.Application\Licitaciones.Application.csproj" />
     <ProjectReference Include="..\Licitaciones.Infrastructure\Licitaciones.Infrastructure.csproj" />
   </ItemGroup>
