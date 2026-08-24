@@ -40,7 +40,11 @@ public sealed class PaginacionViewModel
     /// <typeparam name="T">Tipo de los elementos listados.</typeparam>
     /// <param name="listado">Listado con su pagina y sus parametros.</param>
     /// <returns>El modelo listo para la vista parcial.</returns>
-    public static PaginacionViewModel Desde<T>(ListadoViewModel<T> listado)
+    /// <remarks>
+    /// Se llama Crear y no Desde porque este tipo ya expone una propiedad Desde, que es el
+    /// numero del primer registro visible en la pagina.
+    /// </remarks>
+    public static PaginacionViewModel Crear<T>(ListadoViewModel<T> listado)
     {
         ArgumentNullException.ThrowIfNull(listado);
 
