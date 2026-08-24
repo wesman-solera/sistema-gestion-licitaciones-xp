@@ -174,8 +174,24 @@ En Docker Compose y en Kubernetes el contenedor de la aplicación puede arrancar
 PostgreSQL acepte conexiones. El reintento es lo que permite que `docker compose up --build`
 funcione sin pasos manuales intermedios.
 
-El total de espera acumulada es de unos 156 segundos repartidos en 12 intentos, suficiente para el
+El total de espera acumulada es de unos 56 segundos repartidos en 8 intentos, suficiente para el
 arranque inicial de un cluster de PostgreSQL vacío.
+
+### Orden de arranque
+
+`Program.Main` abre el puerto antes de migrar:
+
+```csharp
+await aplicacion.StartAsync();
+await IniciadorBaseDatos.MigrarAsync(aplicacion.Services);
+await aplicacion.WaitForShutdownAsync();
+```
+
+El orden no es cosmético. Si se migrara antes de escuchar, el proceso pasaría su ventana de
+arranque sin contestar la sonda de vida y el orquestador lo declararía enfermo aunque estuviera
+trabajando con normalidad. Con este orden, `/health/vivo` responde desde el primer segundo y
+`/health/listo` es el que se mantiene en rojo hasta que `GetPendingMigrationsAsync` devuelve una
+lista vacía: mientras el esquema no esté completo, el pod no recibe tráfico.
 
 ### Comandos de migración
 

@@ -16,7 +16,7 @@ namespace Licitaciones.Infrastructure.Persistencia;
 public static class IniciadorBaseDatos
 {
     /// <summary>Cantidad maxima de intentos de conexion durante el arranque.</summary>
-    public const int IntentosMaximos = 12;
+    public const int IntentosMaximos = 8;
 
     /// <summary>Espera base entre intentos, en segundos. Crece de forma lineal con el intento.</summary>
     public const int EsperaBaseSegundos = 2;

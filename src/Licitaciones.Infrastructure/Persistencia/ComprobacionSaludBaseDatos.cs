@@ -43,9 +43,21 @@ public sealed class ComprobacionSaludBaseDatos : IHealthCheck
         {
             bool responde = await _contexto.Database.CanConnectAsync(cancellationToken);
 
-            return responde
-                ? HealthCheckResult.Healthy("La base de datos responde.")
-                : HealthCheckResult.Unhealthy("La base de datos no acepta conexiones.");
+            if (!responde)
+            {
+                return HealthCheckResult.Unhealthy("La base de datos no acepta conexiones.");
+            }
+
+            // Conectar no basta para declararse disponible. Durante el arranque el proceso ya
+            // escucha mientras las migraciones siguen corriendo, y en ese hueco el esquema aun
+            // no existe: atender peticiones ahi devolveria errores. La sonda de disponibilidad
+            // solo se pone en verde cuando no queda ninguna migracion pendiente.
+            IEnumerable<string> pendientes =
+                await _contexto.Database.GetPendingMigrationsAsync(cancellationToken);
+
+            return pendientes.Any()
+                ? HealthCheckResult.Unhealthy("Hay migraciones pendientes de aplicar.")
+                : HealthCheckResult.Healthy("La base de datos responde y esta migrada.");
         }
         catch (Exception excepcion)
         {

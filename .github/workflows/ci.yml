@@ -240,7 +240,29 @@ jobs:
           cp .env.example .env
           sed -i 's/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=clave_de_integracion_continua/' .env
           sed -i 's/Password=cambie_esta_clave/Password=clave_de_integracion_continua/' .env
-          docker compose up --detach --wait --wait-timeout 240
+          docker compose up --detach --wait --wait-timeout 240 || echo "La espera de Compose no quedo en verde; los registros del paso siguiente lo explican."
+
+      - name: Mostrar el estado y los registros de arranque
+        if: always()
+        run: |
+          docker compose ps --all
+          echo "----- registros de la aplicacion -----"
+          docker compose logs --no-color --tail 300 aplicacion || true
+          echo "----- registros de postgresql -----"
+          docker compose logs --no-color --tail 60 postgres || true
+
+      - name: Esperar a que la base este migrada
+        run: |
+          for intento in $(seq 1 40); do
+            if curl --fail --silent http://localhost:8080/health/listo > /dev/null; then
+              echo "La aplicacion quedo lista en el intento ${intento}."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "La sonda de disponibilidad nunca respondio. Registros de la aplicacion:"
+          docker compose logs --no-color aplicacion
+          exit 1
 
       - name: Comprobar que la aplicacion responde
         run: |
@@ -268,7 +290,10 @@ jobs:
 
       - name: Recoger los registros de los contenedores si algo fallo
         if: failure()
-        run: docker compose logs --no-color > registros-contenedores.txt
+        run: |
+          docker compose logs --no-color > registros-contenedores.txt
+          echo "================ REGISTROS COMPLETOS ================"
+          cat registros-contenedores.txt
 
       - name: Publicar los resultados
         if: always()

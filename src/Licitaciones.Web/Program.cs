@@ -62,10 +62,6 @@ public class Program
 
         ConfigurarCulturaCostaRica(aplicacion);
 
-        // Aplicar las migraciones al arrancar es lo que permite que "docker compose up --build"
-        // levante el sistema sin pasos manuales (seccion 13.1 y 17.2).
-        await IniciadorBaseDatos.MigrarAsync(aplicacion.Services);
-
         aplicacion.UseExceptionHandler("/Inicio/Error");
 
         if (!aplicacion.Environment.IsDevelopment())
@@ -107,7 +103,20 @@ public class Program
         // de PostgreSQL no provoque el reinicio en bucle del pod de la aplicacion (seccion 13.2).
         aplicacion.MapGet("/health/vivo", () => Results.Ok(new { estado = "vivo" }));
 
-        await aplicacion.RunAsync();
+        // El orden importa. Primero se abre el puerto y solo despues se migra la base.
+        //
+        // La sonda de vida tiene que responder desde el primer segundo: si se migrara antes de
+        // escuchar, el contenedor pasaria su ventana de arranque sin contestar y el orquestador
+        // lo declararia enfermo aunque el proceso estuviera trabajando con normalidad. Es la
+        // misma separacion que pide la seccion 13.2: vivo responde sin tocar PostgreSQL, y listo
+        // es el que refleja el estado real de la base.
+        await aplicacion.StartAsync();
+
+        // Aplicar las migraciones al arrancar es lo que permite que "docker compose up --build"
+        // levante el sistema sin pasos manuales (seccion 13.1 y 17.2).
+        await IniciadorBaseDatos.MigrarAsync(aplicacion.Services);
+
+        await aplicacion.WaitForShutdownAsync();
     }
 
     /// <summary>
